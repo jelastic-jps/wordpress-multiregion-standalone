@@ -65,6 +65,13 @@ settings:
       value: 1
       markup:
 
+    - type: separator
+  
+    - caption: Topology
+      type: displayfield
+      name: topology
+      tooltip: "<h3>Multi-Region Standalone</h3><br><img width='314' height='380' src='https://raw.githubusercontent.com/jelastic-jps/wordpress/master/wordpress-edition/images/topo/woocommerce-cluster.svg'>"
+
     - caption: Regions
       type: regionlist
       name: regions
