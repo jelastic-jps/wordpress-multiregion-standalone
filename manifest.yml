@@ -10,11 +10,11 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master/images/82dark-back-01.svg
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
-  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
 settings:
   fields:
