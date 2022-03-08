@@ -1,0 +1,36 @@
+jpsType: update
+id: multiregions-content-synchronization-manager
+name: Multi-Regions Content Synchronization Manager
+description: Multi-Regions Content Synchronization Manager
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+
+globals:
+  sync_pass: ${settings.sync_pass}
+  cluster_name: "${settings.cluster_name}"
+
+onInstall:
+  - getClusterEnvs
+  - initialContentSynchronization
+
+actions:
+  getClusterEnvs:
+    - script: ${baseUrl}/scripts/getClusterEnvs.js
+      envName: ${env.name}
+    - setGlobals:
+        nextIndex: ${response.nextIndex}
+        clusterEnvs: ${response.items.join(,)}
+
+  initialContentSynchronization:
+    - script: |
+        var envs = '${globals.clusterEnvs}'.split(','), actions = [];
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          actions.push({
+            jps: "${baseUrl}/scripts/contentSynchronization.jps?_r=${fn.random}",
+            envName: envs[i],
+            settings: {
+              sync_pass: "${globals.sync_pass}",
+              cluster_name: "${globals.cluster_name}"
+            }
+          });
+        }
+        return { result: 0, onAfterReturn: { install: actions } };

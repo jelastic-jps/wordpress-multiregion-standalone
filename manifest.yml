@@ -1,0 +1,231 @@
+type: install
+name: Multi-Region Standalone
+id: wordpress-multiregion-standalone
+categories:
+  - apps/clusters
+  - apps/content-management
+  - wordpress
+description: 
+  text: /text/wordpress-multiregion-standalone.md
+  short: WordPress single instances in multi-region powered by LiteSpeed.
+logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master/images/82dark-back-01.svg
+
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+
+mixins:
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
+  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+
+settings:
+  fields:
+    - caption: Advanced Features
+      type: displayfield
+      name: displayfield
+      markup:
+ 
+    - caption: WordPress Brute Force Attack Protection
+      type: checkbox
+      name: wp_protect
+      value: true
+      disabled: false
+      tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>."
+
+    - caption: Web Application Firewall
+      type: checkbox
+      name: waf
+      value: true
+      disabled: false
+      tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo."
+
+    - caption: Install Let's Encrypt SSL with Auto-Renewal
+      type: checkbox
+      name: le_addon
+      value: true
+      disabled: false
+      tooltip: "Advanced integration with Let's Encrypt certificate authority that simplifies and automates the process of issuing, configuring and renewing trusted SSL certificates."
+
+    - caption: Install Lightning-Fast Premium CDN with 160+ PoPs
+      type: checkbox
+      name: cdn_addon
+      value: true
+      disabled: false
+      tooltip: "Jelastic CDN is an HTTP/3 premium content delivery network of 160+ Super PoPs (points of presence) with bandwidth capacity up to 115 Tbps, advanced caching and acceleration strategies based on best-in-class IP Anycast technology."
+
+    - caption: Install WordPress Multisite Network
+      type: checkbox
+      name: mu_addon
+      value: false
+      disabled: false
+      tooltip: "Multisite is a type of WordPress installation that allows you to create and manage a network of multiple websites from a single WordPress dashboard. This lets you easily make changes and keep all of your websites updated from one place."
+
+    - type: displayfield
+      hideLabel: true
+      hidden: true
+      name: message   
+      value: 1
+      markup:
+
+    - caption: Regions
+      type: regionlist
+      name: regions
+      disableInactive: true
+      selectFirstAvailable: false
+      multiSelect: true
+      min: 2
+      max: 2
+
+    - caption: Environment
+      type: envname
+      name: envName
+      dependsOn: region
+      randomName: true
+      showFullDomain: false
+      required: true
+
+globals:
+  db_user: jelastic-${fn.random}
+  db_pass: ${fn.password(10)}
+  sync_pass: ${fn.password(10)}
+  repl_user: replica-${fn.random}
+  repl_pass: ${fn.password(10)}
+  protocol: http
+  wp_admin_pass: ${fn.password(10)}
+  success: default
+
+onInstall:
+  - initGlobals
+  - setGlobals:
+      domain: ${settings.envName}-1.${globals.domain-1}
+  - createEnvs
+  - installAdditionals
+  - getEnvNodes
+  - installReplications
+  - installWordpress
+  - if (${settings.le_addon:false}): installLEaddon
+  - if (${settings.cdn_addon:false}): installCDNaddon
+  
+actions:
+
+  initGlobals:
+    - script: |
+        var regions = '${settings.regions}'.split(','),
+            envGroups = eval('(' + MANIFEST + ')').envGroups, index,
+            onAfterReturn = { setGlobals: {} }, 
+            glbs = onAfterReturn.setGlobals,
+            resp, domain;
+        resp = jelastic.env.control.GetRegions(appid, session);
+        if (resp.result != 0) return resp;
+        resp = resp.array;
+        for (var i = 0, n = regions.length; i < n; i ++) {
+          index = i + 1;
+          glbs["region-" + index] = regions[i];
+          for (var a = 0, b = resp.length; a < b; a++) {
+            for (var k = 0, l = resp[a].hardNodeGroups.length; k < l; k++) {
+              if (resp[a].hardNodeGroups[k].uniqueName == regions[i])
+                glbs["domain-" + index] = resp[a].domain;
+            }
+          }
+          glbs["displayName-" + index] = "WP Simple " + index;          
+        }
+        glbs["envGroups"] = envGroups;
+        glbs["regionsCount"] = regions.length;
+        glbs["master_env_name"] = "${settings.envName}-1";
+        return { result: 0, onAfterReturn: onAfterReturn };
+  createEnvs:
+    - script: |
+        var regions = '${settings.regions}'.split(','), actions = [];
+        var envGroups = eval('(' + MANIFEST + ')').envGroups;
+        for (var cluster = 1, n = regions.length + 1; cluster < n; cluster ++) {
+          actions.push({
+            jps: "${globals.wp_standalone_path}/manifest.yml?_r=${fn.random}",
+            envName: "${settings.envName}-" + cluster,
+            loggerName: "${settings.envName}-" + cluster,
+            envGroups: envGroups,
+            displayName: "${globals.displayName-" + cluster + "}",
+            region: "${globals.region-" + cluster + "}",
+            settings: {
+              ls_addon: "true",
+              waf: "${settings.waf}",
+              wp_protect: "${settings.wp_protect}",
+              le_addon: "false",
+              cdn_addon: "false",
+              is_single_deploy: "false"
+            }
+          });
+        }
+        return { result: 0, onAfterReturn: { 'marketplace.jps.install': actions } };
+  installAdditionals:
+    - script: |
+        var regions = '${settings.regions}'.split(','), actions = [];
+        for (var cluster = 1, n = regions.length + 1; cluster < n; cluster ++) {
+          actions.push({
+            jps: "/scripts/additionals.jps?_r=${fn.random}",
+            envName: "${settings.envName}-" + cluster,
+          });
+        }
+        return { result: 0, onAfterReturn: { 'install': actions } };
+  getEnvNodes:
+    - script: |
+        var regions = '${settings.regions}'.split(','),
+            onAfterReturn = { setGlobals: {} },
+            glbs = onAfterReturn.setGlobals;
+        for (var cluster = 1, n = regions.length + 1; cluster < n; cluster ++) {
+          var resp = jelastic.env.control.GetEnvInfo('${settings.envName}-' + cluster, session);
+          if (resp.result != 0) return resp;
+          for (var i = 0, k = resp.nodes; i < k.length; i++) {
+            if (k[i].nodeGroup == 'cp') 
+              k[i].ismaster ? glbs["master_id_cp-" + cluster] = k[i].id : 0;
+          }
+        }
+        return { result: 0, onAfterReturn: onAfterReturn };
+  installReplications:
+    - install:
+      - jps: ${baseUrl}/scripts/primaryReplicationManager.jps
+        envName: ${settings.envName}-1
+        settings:
+          db_user: ${globals.db_user}
+          db_pass: ${globals.db_pass}
+          repl_user: ${globals.repl_user}
+          repl_pass: ${globals.repl_pass}
+          cluster_name: ${settings.envName}
+      - jps: ${baseUrl}/scripts/contentSynchronizationManager.jps
+        envName: ${settings.envName}-1
+        settings:
+          sync_pass: ${globals.sync_pass}
+          cluster_name: ${settings.envName}
+
+  installWordpress:
+    - install: ${globals.wp_cluster_path}/scripts/installWP.jps
+      envName: ${settings.envName}-1
+      settings:
+        db_host: 127.0.0.1
+        db_user: ${globals.db_user}
+        db_pass: ${globals.db_pass}
+        wp_admin_pass: ${globals.wp_admin_pass}
+        wp_title: "Hello World"
+        wp_url: ${globals.protocol}://${globals.domain}
+        version_wordpress: ${globals.version_wordpress}
+        cluster: false
+
+  installLEaddon:
+    install:
+      jps: ${baseUrl}/scripts/installLE.jps
+      envName: ${settings.envName}-1
+      settings:
+        domain: ${globals.domain}
+        baseUrl: ${baseUrl}
+        le_addon: ${settings.le_addon:false}
+
+  installCDNaddon:
+    install:
+      jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
+      envName: ${settings.envName}-1
+      skipEmail: true
+      settings:
+        note: ${settings.noteCDN:}
+
+success:
+  email: success/email/success-${globals.success}.md?_r=${fn.random}
+  text: success/text/success-${globals.success}.md?_r=${fn.random}
+
+startPage: ${globals.protocol}://${globals.domain}/

@@ -1,0 +1,73 @@
+jpsType: update
+id: multiregions-primary-replication-manager
+name: Multi-Regions Primary Replication Manager
+description: Multi-Regions Primary Replication Manager
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+
+globals:
+  db_user: ${settings.db_user}
+  db_pass: ${settings.db_pass}
+  repl_user: ${settings.repl_user}
+  repl_pass: ${settings.repl_pass}
+  cluster_name: ${settings.cluster_name}
+
+onInstall:
+  - getClusterEnvs
+  - initialPrimaryReplication
+  - startPrimaryReplication
+
+actions:
+  getClusterEnvs:
+    - script: ${baseUrl}/scripts/getClusterEnvs.js
+      envName: ${env.name}
+    - setGlobals:
+        nextIndex: ${response.nextIndex}
+        clusterEnvs: ${response.items.join(,)}
+
+  initialPrimaryReplication:
+    - script: |
+        var envs = '${globals.clusterEnvs}'.split(','),
+            actions = [], master;
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          master = false;
+          if ((envs[i] == "${globals.cluster_name}-1") || (envs[i] == "${globals.cluster_name}-2"))
+            master = true;
+          actions.push({
+            jps: "${baseUrl}/scripts/primaryReplication.jps?_r=${fn.random}",
+            envName: envs[i],
+            settings: {
+              master: master,
+              pre_install: "true",
+              db_user: "${globals.db_user}",
+              db_pass: "${globals.db_pass}",
+              repl_user: "${globals.repl_user}",
+              repl_pass: "${globals.repl_pass}",
+              cluster_name: "${globals.cluster_name}"              
+            }
+          });
+        }
+        return { result: 0, onAfterReturn: { install: actions } };
+
+  startPrimaryReplication:
+    - script: |
+        var envs = '${globals.clusterEnvs}'.split(','),
+            actions = [], master;
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          master = false;
+          if ((envs[i] == "${globals.cluster_name}-1") || (envs[i] == "${globals.cluster_name}-2"))
+            master = true;
+          actions.push({
+            jps: "${baseUrl}/scripts/primaryReplication.jps?_r=${fn.random}",
+            envName: envs[i],
+            settings: {
+              master: master,
+              post_install: "true",
+              db_user: "${globals.db_user}",
+              db_pass: "${globals.db_pass}",
+              repl_user: "${globals.repl_user}",
+              repl_pass: "${globals.repl_pass}",
+              cluster_name: "${globals.cluster_name}"              
+            }
+          });
+        }
+        return { result: 0, onAfterReturn: { install: actions } };

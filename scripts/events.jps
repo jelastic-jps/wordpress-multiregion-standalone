@@ -1,0 +1,64 @@
+type: update
+id: wordpress-simple-multiregion-events
+name: WordPress Simple MultiRegion Events
+description: WordPress Simple MultiRegion Events
+
+mixins:
+  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+
+onAfterInstallAddon [nodeGroup:cp, id:cdn]:
+  - addFlag
+  - setupCDN
+  - deleteFlag
+  
+actions:
+  addFlag:
+    - script: ${globals.base_path}/scripts/getClusterEnvs.js
+      envName: ${env.name}
+    - setGlobals:
+        clusterEnvs: ${response.items.join(,)}      
+    - script: |
+        var envs = '${globals.clusterEnvs}'.split(','), api = [];
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          api.push({
+            method: "env.control.ExecCmdByGroup",
+              envName: envs[i],
+              nodeGroup: "cp",
+              commandList: [{"command": "if test ! -f ~/flag; then echo '${env.envName}' > ~/flag; fi"}]
+          });
+        }
+        return { result: 0, onAfterReturn: { api: api, async: true } }
+
+  setupCDN:
+    - cmd[${nodes.cp.master.id}]: if test -f ~/flag; then cat ~/flag; fi
+    - setGlobals:
+        masterEnv: ${response.out}
+    - if ('${globals.masterEnv}' == '${env.envName}'):
+        - script: |
+            return { result : 0, onAfterReturn: { setGlobals: { cluster_envs_array: "${globals.clusterEnvs}".split(",") } }};
+        - forEach(clusternode:globals.cluster_envs_array):
+          - if ('${@clusternode}' == '${env.envName}'):
+            - script: return jelastic.dev.scripting.Eval("c05ffa5b45628a2a0c95467ebca8a0b4", session, "cdn.info", {partnerCode:1})
+            - cmd[${nodes.cp.master.id}]: |-
+                bash ~/bin/setupWP.sh --edgeportCDN true --CDN_URL ${env.envName}-${response.response.partnerCode}.cdn.jelastic.net
+          - else:
+            - install: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
+              nodeGroup: cp
+              skipEmail: true
+              envName: ${@clusternode}
+              settings:
+                note: ${settings.noteCDN:}
+                masterEnv: ${globals.masterEnv}
+  deleteFlag:
+    - script: |
+        var envs = '${globals.clusterEnvs}'.split(','), api = [];
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          var master = ( envs[i] == '${env.envName}' ) ? true : false;
+          api.push({
+            method: "env.control.ExecCmdByGroup",
+              envName: envs[i],
+              nodeGroup: "cp",
+              commandList: [{"command": "rm -f ~/flag;"}]
+          });
+        }
+        return { result: 0, onAfterReturn: { api: api, async: true } }

@@ -1,0 +1,85 @@
+type: update
+id: wp-single-multiregions-addons
+name: WordPress Simple Multiregions Addons
+description: WordPress Simple Multiregions Addons
+
+mixins:
+  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+
+onInstall:
+  - installDependencies
+  - installAddon:
+    - id: wp-setup-base-url-addon
+      nodeGroup: cp  
+    - id: wp-cache-purge-addon
+      nodeGroup: cp  
+
+addons:
+  - id: wp-setup-base-url-addon
+    type: update
+    name: WordPress Base URL
+    description: WordPress Base URL Configuration.
+    settings:
+      fields:
+        - type: string
+          name: wordpressURL
+          caption: Base URL for WordPress
+          default: ''
+          required: true
+          regex: "^https?:\\/\\/.+$"
+          regexText: Incorrect Base URL.
+
+    buttons:
+      - caption: Base URL
+        settings: main
+        action: setup_base_url
+        loadingText: Applying...
+        confirmText: Do you want to change Base URL?
+        successText:  Base URL for WordPress has been successfully applyed!        
+
+  - id: wp-cache-purge-addon
+    type: update
+    name: Cache Manager
+    description: Clean all caches.
+    buttons:
+      - caption: Clean all caches
+        action: cachePurge
+        loadingText: Cleaning...
+        confirmText: Do you want to clean all caches?
+        successText:  Caches have been successfully cleaned!
+        
+actions:
+  installDependencies:
+    - cmd[cp]: |-
+        [ ! -d $HOME/bin ] && mkdir $HOME/bin;
+        curl -o $HOME/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && chmod +x $HOME/bin/wp;
+        echo "export PATH=$PATH:$HOME/bin/" >> $HOME/.bash_profile;
+        wget ${globals.wp_cluster_path}/scripts/setupWP.sh?_r=${fn.random} -O ~/bin/setupWP.sh &>> /var/log/run.log;
+        echo $HOME/bin;
+    - cmd[cp]:
+        echo ${response.out} >> /etc/jelastic/redeploy.conf;
+      user: root
+
+  cachePurge:
+    - script: ${globals.base_path}/scripts/getClusterEnvs.js
+      envName: ${env.name}
+    - setGlobals:
+        clusterEnvs: ${response.items.join(,)} 
+    - script: |
+        var envs = '${response.items.join(,)}'.split(','), api = [];
+        for (var i = 0, n = envs.length; i < n; i ++) {
+          api.push({
+            method: "env.control.ExecCmdByGroup",
+              envName: envs[i],
+              nodeGroup: "cp",
+              commandList: [
+                {"command": "wp litespeed-purge all --path=/var/www/webroot/ROOT/;"},
+                {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
+              ]
+          });
+        }
+        return { result: 0, onAfterReturn: { api: api, async: true } }
+
+  setup_base_url:
+    - cmd[cp]: bash ~/bin/setupWP.sh --DOMAIN ${settings.wordpressURL}
+    - cachePurge

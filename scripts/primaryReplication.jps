@@ -1,0 +1,91 @@
+jpsType: update
+id: multiregions-primary-replication
+name: Multi-Regions Primary Replication
+description: Multi-Regions Primary Replication
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master
+
+mixins:
+  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+
+globals:
+  master: ${settings.master:false}
+  pre_install: ${settings.pre_install:false}
+  post_install: ${settings.post_install:false}
+  db_user: ${settings.db_user}
+  db_pass: ${settings.db_pass}
+  repl_user: ${settings.repl_user}
+  repl_pass: ${settings.repl_pass}
+  cluster_name: ${settings.cluster_name:false}
+  
+onInstall:
+  - if ('${globals.pre_install}' == 'true'):
+    - if ('${globals.master}' == 'true'):
+      - if ('${env.envName}' == '${globals.cluster_name}-1'):
+        - masterConfiguration:
+            increment: 1
+      - else:
+        - masterConfiguration:
+            increment: 2
+    - setupMainUser
+    - setupReplicaUser    
+  - if ('${globals.post_install}' == 'true'):
+    - getMastersIPs
+    - if ('${globals.master}' == 'true'):
+      - if ('${env.envName}' == '${globals.cluster_name}-1'):
+        - setupMaterReplication:
+            master: ${globals.master2_ip}
+      - else:
+        - setupMaterReplication:
+            master: ${globals.master1_ip}
+
+actions:
+  setupMainUser:
+    cmd[cp]: |-
+      wget ${globals.db_cluster_path}/scripts/setupUser.sh -O ~/setupUser.sh &>> /var/log/run.log;
+      bash ~/setupUser.sh ${globals.db_user} ${globals.db_pass} &>> /var/log/run.log;
+      jem passwd set -p ${globals.db_pass} &>> /var/log/run.log;
+    user: root
+
+  setupReplicaUser:
+    cmd[cp]: |-
+      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "CREATE USER '${globals.repl_user}'@'%' IDENTIFIED BY '${globals.repl_pass}';";
+      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "GRANT REPLICATION CLIENT,REPLICATION SLAVE ON *.* TO '${globals.repl_user}'@'%'; FLUSH PRIVILEGES;";
+
+  masterConfiguration:
+    - cmd[cp]: |-
+        yum downgrade https://downloads.mysql.com/archives/get/p/29/file/mysql-connector-python-8.0.11-1.el7.x86_64.rpm -y &>> /var/log/run.log;
+        yum install https://downloads.mysql.com/archives/get/p/30/file/mysql-utilities-1.6.5-1.el7.noarch.rpm -y &>> /var/log/run.log;
+        ln -s /usr/lib/python2.7/site-packages/mysql/utilities /usr/lib64/python2.7/site-packages/mysql/utilities;
+      user: root
+
+    - cmd[cp]: |-
+        wget ${globals.db_cluster_path}/configs/master.cnf -O /etc/mysql/conf.d/master.cnf &>> /var/log/run.log;
+        sed -i "s/report_host.*/report_host = ${nodes.cp.master.address}/" /etc/mysql/conf.d/master.cnf; 
+        sed -i "s/server-id.*/server-id = ${nodes.cp.master.id}/" /etc/mysql/conf.d/master.cnf;
+        sed -i "s/auto-increment-offset.*/auto-increment-offset = ${this.increment}/" /etc/mysql/conf.d/master.cnf;
+        echo "bind-address = 0.0.0.0" >> /etc/mysql/conf.d/master.cnf;
+
+  setupMaterReplication:
+    - cmd[cp]: |-
+        wget ${globals.db_cluster_path}/scripts/setupReplication.sh -O ~/setupReplication.sh &>> /var/log/run.log
+        bash ~/setupReplication.sh ${this.master} ${nodes.cp.master.address} ${globals.db_user} ${globals.db_pass} ${globals.repl_user} ${globals.repl_pass} &>> /var/log/run.log
+      user: root
+
+  getMastersIPs:
+     - script: |
+        var onAfterReturn = { setGlobals: {} },
+            glbs = onAfterReturn.setGlobals;
+        var resp = jelastic.env.control.GetEnvInfo("${globals.cluster_name}-1", session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? glbs["master1_ip"] = k[i].address : 0;
+        }
+        var resp = jelastic.env.control.GetEnvInfo("${globals.cluster_name}-2", session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? glbs["master2_ip"] = k[i].address : 0;
+        }
+        return { result: 0, onAfterReturn: onAfterReturn };
+    

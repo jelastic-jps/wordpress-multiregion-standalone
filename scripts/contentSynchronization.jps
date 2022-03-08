@@ -1,0 +1,52 @@
+jpsType: update
+id: multiregions-content-synchronization
+name: Multi-Regions Content Synchronization
+description: Multi-Regions Content Synchronization
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+
+globals:
+  sync_pass: ${settings.sync_pass}
+  cluster_name: ${settings.cluster_name:false}
+  
+onInstall:
+  - cleanDir
+  - getMastersIPs
+  - if ('${env.envName}' == '${globals.cluster_name}-1'):
+      setupSynchronization:
+        master: ${globals.master2_ip}
+  - else:
+      setupSynchronization:
+        master: ${globals.master1_ip}
+
+actions:
+  cleanDir:
+    cmd[cp]: rm -rf /var/www/webroot/ROOT/{*,.[a-zA-Z_-]*};
+
+  setupSynchronization:
+    install:
+    - jps: https://raw.githubusercontent.com/sych74/file-sync/master/manifest.jps?_r=${fn.random}
+      nodeGroup: cp
+      skipEmail: true
+      settings:
+        optional: two_envs
+        address: ${this.master}
+        password: ${globals.sync_pass}
+        delay: 5
+
+  getMastersIPs:
+     - script: |
+        var onAfterReturn = { setGlobals: {} },
+            glbs = onAfterReturn.setGlobals;
+        var resp = jelastic.env.control.GetEnvInfo("${globals.cluster_name}-1", session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? glbs["master1_ip"] = k[i].address : 0;
+        }
+        var resp = jelastic.env.control.GetEnvInfo("${globals.cluster_name}-2", session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? glbs["master2_ip"] = k[i].address : 0;
+        }
+        return { result: 0, onAfterReturn: onAfterReturn };
