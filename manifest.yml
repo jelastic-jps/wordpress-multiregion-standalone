@@ -1,7 +1,7 @@
 type: install
 jpsVersion: 7.1.1
 targetEditions: wordpress
-name: Multi-Region Standalone
+name: Multi-Region Standalone (BETA)
 id: wordpress-multiregion-standalone
 categories:
   - apps/clusters
