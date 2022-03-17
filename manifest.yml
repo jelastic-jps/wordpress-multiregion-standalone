@@ -71,7 +71,7 @@ settings:
     - caption: Topology
       type: displayfield
       name: topology
-      tooltip: "<h2 align=center>Multi-Region Standalone<br>Cluster</h2><img width='390' height='340' src='https://raw.githubusercontent.com/vlobzakov/images/main/multi-region-standalone.svg?sanitize=true'><br>" 
+      tooltip: "<h2 align=center>Multi-Region Standalone<br>Cluster</h2><img width='390' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/images/topo/multi-region-standalone.svg?sanitize=true'><br>" 
 
     - caption: Regions
       type: regionlist
