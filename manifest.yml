@@ -11,7 +11,7 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master/images/82dark-back-01.svg
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/master
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
@@ -167,7 +167,7 @@ actions:
         var regions = '${settings.regions}'.split(','), actions = [];
         for (var cluster = 1, n = regions.length + 1; cluster < n; cluster ++) {
           actions.push({
-            jps: "${globals.base_path}/scripts/additionals.jps?_r=${fn.random}",
+            jps: "/scripts/additionals.jps?_r=${fn.random}",
             envName: "${settings.envName}-" + cluster,
           });
         }
@@ -188,7 +188,7 @@ actions:
         return { result: 0, onAfterReturn: onAfterReturn };
   installReplications:
     - install:
-      - jps: ${globals.base_path}/scripts/primaryReplicationManager.jps
+      - jps: /scripts/primaryReplicationManager.jps
         envName: ${settings.envName}-1
         settings:
           db_user: ${globals.db_user}
@@ -217,7 +217,7 @@ actions:
 
   installLEaddon:
     install:
-      jps: ${baseUrl}/scripts/installLE.jps
+      jps: /scripts/installLE.jps
       envName: ${settings.envName}-1
       settings:
         domain: ${globals.domain}
