@@ -110,7 +110,7 @@ onInstall:
   - getEnvNodes
   - installReplications
   - installWordpress
-  - if (${settings.le_addon:false}): installLEaddon
+  - configureLEaddon
   - if (${settings.cdn_addon:false}): installCDNaddon
   
 actions:
@@ -220,9 +220,9 @@ actions:
         version_wordpress: ${globals.version_wordpress}
         cluster: false
 
-  installLEaddon:
+  configureLEaddon:
     install:
-      jps: /scripts/installLE.jps
+      jps: /scripts/configureLEaddon.jps
       envName: ${settings.envName}-1
       settings:
         domain: ${globals.domain}
