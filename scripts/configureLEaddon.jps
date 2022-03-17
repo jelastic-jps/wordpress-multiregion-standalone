@@ -1,0 +1,50 @@
+type: update
+name: Let's Encrypt add-on configuration
+onInstall:
+  - prepareLEConfig
+  - if (${settings.le_addon:false}): installLEaddon
+
+actions:
+  prepareLEConfig:
+    script: |
+      var firstEnvName = "${env.name}", secondEnvName = "",
+        USER = "root",
+        CP = "cp",
+        KEYS = "/var/lib/jelastic/keys/",
+        CLUSTER_CONFIG = "clustering",
+        resp;
+
+      secondEnvName = firstEnvName.slice(0, -1) + (firstEnvName.slice(-1) == 1 ? '2' : '1');
+  
+      var cmd1 = `le_path=` + KEYS + `"letsencrypt/"; \
+        le_custom="settings-custom"; \
+        mkdir -p $le_path; \
+        echo "deployHook=${baseUrl}/manageLEcerts.js\ndeployHookType=js" >> ${le_path}${le_custom}`;
+        
+      var cmd2 = `touch /root/` + CLUSTER_CONFIG + `; \
+        echo 'envName1=` + firstEnvName + `\nenvName2=` + secondEnvName + `\ncluster=true' >> ` + "/root/" + CLUSTER_CONFIG;
+      
+      resp = api.environment.control.ExecCmdByGroup({
+        envName: firstEnvName, 
+        session: session,
+        nodeGroup: CP, 
+        commandList: toJSON([{"command": cmd1}, {"command": cmd2}]),
+        userName: USER
+      });
+      if (resp.result != 0) return resp;
+      
+      return api.environment.control.ExecCmdByGroup({
+        envName: secondEnvName, 
+        session: session,
+        nodeGroup: CP, 
+        commandList: toJSON([{"command": cmd1}, {"command": cmd2}]),
+        userName: USER
+      });
+      
+  installLEaddon:
+    install: https://github.com/jelastic-jps/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
+    nodeGroup: cp
+    skipEmail: true
+    settings:
+      customDomains: ${settings.domain}
+      fallbackToX1: true
