@@ -9,7 +9,7 @@ categories:
 description: 
   text: /text/wordpress-multiregion-standalone.md
   short: WordPress single instances in multi-region powered by LiteSpeed.
-logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master/images/82dark-back-01.svg
+logo: /images/logo/multiregion-standalone.svg
 
 baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/master
 
