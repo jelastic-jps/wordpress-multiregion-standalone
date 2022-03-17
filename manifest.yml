@@ -104,6 +104,7 @@ onInstall:
   - initGlobals
   - setGlobals:
       domain: ${settings.envName}-1.${globals.domain-1}
+  - setProtocol
   - createEnvs
   - installAdditionals
   - getEnvNodes
@@ -133,12 +134,13 @@ actions:
                 glbs["domain-" + index] = resp[a].domain;
             }
           }
-          glbs["displayName-" + index] = "WP Simple " + index;          
+          glbs["displayName-" + index] = "WP Standalone " + index;          
         }
         glbs["envGroups"] = envGroups;
         glbs["regionsCount"] = regions.length;
         glbs["master_env_name"] = "${settings.envName}-1";
         return { result: 0, onAfterReturn: onAfterReturn };
+
   createEnvs:
     - script: |
         var regions = '${settings.regions}'.split(','), actions = [];
@@ -162,6 +164,7 @@ actions:
           });
         }
         return { result: 0, onAfterReturn: { 'marketplace.jps.install': actions } };
+
   installAdditionals:
     - script: |
         var regions = '${settings.regions}'.split(','), actions = [];
@@ -172,6 +175,7 @@ actions:
           });
         }
         return { result: 0, onAfterReturn: { 'install': actions } };
+
   getEnvNodes:
     - script: |
         var regions = '${settings.regions}'.split(','),
@@ -186,6 +190,7 @@ actions:
           }
         }
         return { result: 0, onAfterReturn: onAfterReturn };
+
   installReplications:
     - install:
       - jps: /scripts/primaryReplicationManager.jps
@@ -196,7 +201,7 @@ actions:
           repl_user: ${globals.repl_user}
           repl_pass: ${globals.repl_pass}
           cluster_name: ${settings.envName}
-      - jps: ${globals.base_path}/scripts/contentSynchronizationManager.jps
+      - jps: /scripts/contentSynchronizationManager.jps
         envName: ${settings.envName}-1
         settings:
           sync_pass: ${globals.sync_pass}
@@ -231,6 +236,16 @@ actions:
       skipEmail: true
       settings:
         note: ${settings.noteCDN:}
+
+  setProtocol:
+    - script: |
+        return {
+          result:0,
+          ssl: jelastic.billing.account.GetQuotas('environment.jelasticssl.enabled').array[0].value
+        }
+    - if (${response.ssl} || ${settings.le_addon:false}):
+        setGlobals:
+          protocol: https
 
 success:
   email: /success/email/success-${globals.success}.md?_r=${fn.random}
