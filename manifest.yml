@@ -1,5 +1,4 @@
 type: install
-jpsVersion: 7.1.1
 targetEditions: wordpress
 name: Multi-Region Standalone (BETA)
 id: wordpress-multiregion-standalone
@@ -153,12 +152,12 @@ actions:
             displayName: "${globals.displayName-" + cluster + "}",
             region: "${globals.region-" + cluster + "}",
             settings: {
-              ls_addon: "true",
-              waf: "${settings.waf}",
-              wp_protect: "${settings.wp_protect}",
-              le_addon: "false",
-              cdn_addon: "false",
-              is_single_deploy: "false"
+              "ls-addon": "true",
+              "waf": "${settings.waf}",
+              "wp_protect": "${settings.wp_protect}",
+              "le-addon": "false",
+              "cdn-addon": "false",
+              "isSingleDeploy": "false"
             }
           });
         }
@@ -168,7 +167,7 @@ actions:
         var regions = '${settings.regions}'.split(','), actions = [];
         for (var cluster = 1, n = regions.length + 1; cluster < n; cluster ++) {
           actions.push({
-            jps: "/scripts/additionals.jps?_r=${fn.random}",
+            jps: "${globals.base_path}/scripts/additionals.jps?_r=${fn.random}",
             envName: "${settings.envName}-" + cluster,
           });
         }
@@ -189,7 +188,7 @@ actions:
         return { result: 0, onAfterReturn: onAfterReturn };
   installReplications:
     - install:
-      - jps: ${baseUrl}/scripts/primaryReplicationManager.jps
+      - jps: ${globals.base_path}/scripts/primaryReplicationManager.jps
         envName: ${settings.envName}-1
         settings:
           db_user: ${globals.db_user}
@@ -197,7 +196,7 @@ actions:
           repl_user: ${globals.repl_user}
           repl_pass: ${globals.repl_pass}
           cluster_name: ${settings.envName}
-      - jps: ${baseUrl}/scripts/contentSynchronizationManager.jps
+      - jps: ${globals.base_path}/scripts/contentSynchronizationManager.jps
         envName: ${settings.envName}-1
         settings:
           sync_pass: ${globals.sync_pass}
@@ -234,7 +233,7 @@ actions:
         note: ${settings.noteCDN:}
 
 success:
-  email: success/email/success-${globals.success}.md?_r=${fn.random}
-  text: success/text/success-${globals.success}.md?_r=${fn.random}
+  email: /success/email/success-${globals.success}.md?_r=${fn.random}
+  text: /success/text/success-${globals.success}.md?_r=${fn.random}
 
 startPage: ${globals.protocol}://${globals.domain}/
