@@ -1,5 +1,5 @@
 type: update
-name: Let's Encrypt add-on
+name: Let's Encrypt add-on configuration
 onInstall:
   - prepareLEConfig
   - if (${settings.le_addon:false}): installLEaddon
@@ -42,7 +42,7 @@ actions:
       });
       
   installLEaddon:
-    install: https://github.com/lazarenkoalexey/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
+    install: https://github.com/jelastic-jps/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
     nodeGroup: cp
     skipEmail: true
     settings:
