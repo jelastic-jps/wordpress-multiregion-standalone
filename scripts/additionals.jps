@@ -7,7 +7,7 @@ onInstall:
   - install:
     - jps: /addons.jps?_r=${fn.random}
     - jps: /events.jps?_r=${fn.random}
-    - firewallRules
+  - firewallRules
  
 actions:
   firewallRules:
