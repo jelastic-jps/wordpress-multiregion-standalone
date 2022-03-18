@@ -231,6 +231,7 @@ actions:
       jps: https://raw.githubusercontent.com/jelastic-jps/cdn/multi/manifest.yml?_r=${fn.random}
       envName: ${settings.envName}-1
       skipEmail: true
+      nodeGroup: cp
       settings:
         note: ${settings.noteCDN:}
 
