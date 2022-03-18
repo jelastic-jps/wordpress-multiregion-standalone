@@ -41,14 +41,14 @@ settings:
 
     - caption: Install Let's Encrypt SSL with Auto-Renewal
       type: checkbox
-      name: le_addon
+      name: le-addon
       value: true
       disabled: false
       tooltip: "Advanced integration with Let's Encrypt certificate authority that simplifies and automates the process of issuing, configuring and renewing trusted SSL certificates."
 
     - caption: Install Lightning-Fast Premium CDN with 160+ PoPs
       type: checkbox
-      name: cdn_addon
+      name: cdn-addon
       value: true
       disabled: false
       tooltip: "Jelastic CDN is an HTTP/3 premium content delivery network of 160+ Super PoPs (points of presence) with bandwidth capacity up to 115 Tbps, advanced caching and acceleration strategies based on best-in-class IP Anycast technology."
@@ -105,7 +105,7 @@ onInstall:
   - installReplications
   - installWordpress
   - configureLEaddon
-  - if (${settings.cdn_addon:false}): installCDNaddon
+  - if (${settings.cdn-addon:false}): installCDNaddon
   
 actions:
 
@@ -221,7 +221,7 @@ actions:
       settings:
         domain: ${globals.domain}
         baseUrl: ${baseUrl}
-        le_addon: ${settings.le_addon:false}
+        le-addon: ${settings.le-addon:false}
 
   installCDNaddon:
     install:
@@ -237,7 +237,7 @@ actions:
           result:0,
           ssl: jelastic.billing.account.GetQuotas('environment.jelasticssl.enabled').array[0].value
         }
-    - if (${response.ssl} || ${settings.le_addon:false}):
+    - if (${response.ssl} || ${settings.le-addon:false}):
         setGlobals:
           protocol: https
 
