@@ -84,7 +84,7 @@ settings:
       required: true
 
 globals:
-  db_user: jelastic-${fn.random}
+  db_user: user-${fn.random}
   db_pass: ${fn.password(10)}
   sync_pass: ${fn.password(10)}
   repl_user: replica-${fn.random}
