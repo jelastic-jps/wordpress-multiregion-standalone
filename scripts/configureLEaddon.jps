@@ -2,7 +2,7 @@ type: update
 name: Let's Encrypt add-on configuration
 onInstall:
   - prepareLEConfig
-  - if (${settings.le_addon:false}): installLEaddon
+  - if (${settings.le-addon:false}): installLEaddon
 
 actions:
   prepareLEConfig:
