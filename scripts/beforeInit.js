@@ -4,7 +4,9 @@ import com.hivext.api.core.utils.Transport;
 
 var cdnAppid = "c05ffa5b45628a2a0c95467ebca8a0b4";
 var group = jelastic.billing.account.GetAccount(appid, session);
+if (group.result != 0) return group;
 var isCDN = jelastic.dev.apps.GetApp(cdnAppid);
+if (isCDN.result != 0) return isCDN;
 
 var markup = "", cur = null, text = "used";
 
@@ -23,9 +25,9 @@ if (isCDN.result == 0 || isCDN.result == Response.PERMISSION_DENIED) {
 
 //checking quotas
 var extIP = "environment.externalip.enabled",
-      extIPperEnv = "environment.externalip.maxcount",
-      extIPperNode = "environment.externalip.maxcount.per.node",
-      markup = "", cur = null, text = "used", LE = true;
+    extIPperEnv = "environment.externalip.maxcount",
+    extIPperNode = "environment.externalip.maxcount.per.node",
+    markup = "", cur = null, text = "used", LE = true;
 
 var hasCollaboration = (parseInt('${fn.compareEngine(7.0)}', 10) >= 0),
     quotas = [], group;
@@ -45,7 +47,9 @@ if (hasCollaboration) {
     fields["envName"].dependsOn = "ownerUid";
 } else {
     quotas = jelastic.billing.account.GetQuotas(extIP + ";"+extIPperEnv+";" + extIPperNode).array;
+    if (quotas.result != 0) return quotas;
     group = jelastic.billing.account.GetAccount(appid, session);
+    if (group.result != 0) return group;
 }
 
 for (var i = 0; i < quotas.length; i++){
