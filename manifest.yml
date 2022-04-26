@@ -1,4 +1,5 @@
 type: install
+jpsVersion: 7.1.1
 targetEditions: wordpress
 name: Multi-Region Standalone (BETA)
 id: wordpress-multiregion-standalone
@@ -231,6 +232,7 @@ actions:
       jps: https://raw.githubusercontent.com/jelastic-jps/cdn/master/manifest.yml?_r=${fn.random}
       envName: ${settings.envName}-1
       skipEmail: true
+      nodeGroup: cp
       settings:
         note: ${settings.noteCDN:}
 
