@@ -74,10 +74,10 @@ if (!LE) {
   fields["displayfield"].height = 25;
   fields["le-addon"].disabled = true;
   fields["le-addon"].value = false;
-  fields["bl_count"].markup = "Let's Encrypt is not available. " + markup + "Please upgrade your account.";
-  fields["bl_count"].cls = "warning";
-  fields["bl_count"].hidden = false;
-  fields["bl_count"].height = 30;  
+  fields["message"].markup = "Let's Encrypt is not available. " + markup + "Please upgrade your account.";
+  fields["message"].cls = "warning";
+  fields["message"].hidden = false;
+  fields["message"].height = 30;  
 }
 
 return {
