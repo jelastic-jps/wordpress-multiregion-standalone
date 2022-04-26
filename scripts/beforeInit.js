@@ -47,7 +47,13 @@ if (hasCollaboration) {
         { quota : { name: extIPperEnv }, value: parseInt('${quota.environment.externalip.maxcount}', 10) },
         { quota : { name: extIPperNode }, value: parseInt('${quota.environment.externalip.maxcount.per.node}', 10) }
     ];
-    group = { groupType: '${account.groupType}' };
+    group = { groupType: '${account.groupType}' };  
+    jps.settings.fields.push({
+        "type": "owner",
+        "name": "ownerUid",
+        "caption": "Owner"
+    });
+    fields["envName"].dependsOn = "ownerUid";
 } else {
     quotas = jelastic.billing.account.GetQuotas(extIP + ";"+extIPperEnv+";" + extIPperNode).array;
     group = jelastic.billing.account.GetAccount(appid, session);
