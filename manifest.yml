@@ -15,7 +15,7 @@ baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalo
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
 settings:
   fields:
