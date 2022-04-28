@@ -2,7 +2,6 @@ jpsType: update
 id: multiregions-content-synchronization
 name: Multi-Regions Content Synchronization
 description: Multi-Regions Content Synchronization
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
 
 globals:
   sync_pass: ${settings.sync_pass}
@@ -24,7 +23,7 @@ actions:
 
   setupSynchronization:
     install:
-    - jps: https://raw.githubusercontent.com/sych74/file-sync/master/manifest.jps?_r=${fn.random}
+    - jps: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/manifest.jps?_r=${fn.random}
       nodeGroup: cp
       skipEmail: true
       settings:

@@ -2,7 +2,8 @@ jpsType: update
 id: multiregions-primary-replication-manager
 name: Multi-Regions Primary Replication Manager
 description: Multi-Regions Primary Replication Manager
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master
+
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
 
 globals:
   db_user: ${settings.db_user}

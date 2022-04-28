@@ -4,7 +4,7 @@ name: WordPress Simple Multiregions Addons
 description: WordPress Simple Multiregions Addons
 
 mixins:
-  - https://raw.githubusercontent.com/sych74/wordpress-simple-multiregion/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
 onInstall:
   - installDependencies
@@ -73,6 +73,7 @@ actions:
               envName: envs[i],
               nodeGroup: "cp",
               commandList: [
+                {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
                 {"command": "wp litespeed-purge all --path=/var/www/webroot/ROOT/;"},
                 {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
               ]
@@ -81,5 +82,5 @@ actions:
         return { result: 0, onAfterReturn: { api: api, async: true } }
 
   setup_base_url:
-    - cmd[cp]: bash ~/bin/setupWP.sh --DOMAIN ${settings.wordpressURL}
+    - cmd[cp]: bash ~/bin/setupWP.sh --url ${settings.wordpressURL}
     - cachePurge
