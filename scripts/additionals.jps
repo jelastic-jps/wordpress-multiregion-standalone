@@ -8,6 +8,10 @@ onInstall:
     - jps: /addons.jps?_r=${fn.random}
     - jps: /events.jps?_r=${fn.random}
   - firewallRules
+  - addContext [cp]:
+      name: ROOT
+      fileName: WordPress
+      type: ARCHIVE
  
 actions:
   firewallRules:
