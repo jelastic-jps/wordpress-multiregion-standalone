@@ -18,6 +18,12 @@ globals:
   cluster_name: ${settings.cluster_name:false}
   
 onInstall:
+  - env.control.AddContainerEnvVars[cp]:
+      vars:
+        REPLICA_USER: ${globals.repl_user}
+        REPLICA_PSWD: ${globals.repl_pass}
+        SCHEME: master
+
   - if ('${globals.pre_install}' == 'true'):
     - if ('${globals.master}' == 'true'):
       - if ('${env.envName}' == '${globals.cluster_name}-1'):
