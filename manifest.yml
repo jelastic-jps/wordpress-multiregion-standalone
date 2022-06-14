@@ -90,7 +90,7 @@ globals:
   db_user: user-${fn.random}
   db_pass: ${fn.password(10)}
   sync_pass: ${fn.password(10)}
-  repl_user: replica-${fn.random}
+  repl_user: repl-${fn.random}
   repl_pass: ${fn.password(10)}
   protocol: http
   wp_admin_pass: ${fn.password(10)}
