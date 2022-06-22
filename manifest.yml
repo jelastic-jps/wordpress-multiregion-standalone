@@ -13,7 +13,6 @@ description:
 logo: /images/logo/multiregion-standalone.svg
 
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
-
 onBeforeInit: https://github.com/jelastic-jps/wordpress/raw/master/wordpress-edition/scripts/onBeforeInit.js
 
 mixins:
