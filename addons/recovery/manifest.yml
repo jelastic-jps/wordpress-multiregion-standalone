@@ -238,5 +238,5 @@ actions:
     envName: ${this.envName}
     nodeGroup: ${globals.nodeGroup}
     settings:
-      user: user
-      password: password
+      user: ${settings.user:}
+      password: ${settings.password:}
