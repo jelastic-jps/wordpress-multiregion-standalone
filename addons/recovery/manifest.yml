@@ -237,3 +237,6 @@ actions:
     install: ${baseUrl}/manifest.yml
     envName: ${this.envName}
     nodeGroup: ${globals.nodeGroup}
+    settings:
+      user: user
+      password: password
