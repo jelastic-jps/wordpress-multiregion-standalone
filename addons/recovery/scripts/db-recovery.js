@@ -33,7 +33,7 @@ var AUTH_ERROR_CODE = 701,
 
 if (!exec) isRestore = true;
 
-api.marketplace.console.WriteLog("start3->");
+api.marketplace.console.WriteLog("start4->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
@@ -257,6 +257,9 @@ function parseOut(data, restorePrimary) {
 
             api.marketplace.console.WriteLog("donorIps -> " + donorIps);
         }
+
+        api.marketplace.console.WriteLog("failedNodes->" + failedNodes);
+        api.marketplace.console.WriteLog("failedPrimary->" + failedPrimary);
 
         if (!isRestore && (failedNodes.length || failedPrimary.length)) {
             return {
