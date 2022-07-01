@@ -38,7 +38,7 @@ exec = exec || " --diagnostic";
 user = user || "$REPLICA_USER";
 password = password || "$REPLICA_PSWD";
 
-api.marketplace.console.WriteLog("start0->");
+api.marketplace.console.WriteLog("start1->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
