@@ -146,8 +146,6 @@ actions:
       multiregion: true
       envName1: ${globals.primaryEnvName}
       envName2: ${globals.secondaryEnvName}
-      user: ${settings.user:}
-      password: ${settings.password:}
       nodeGroup: ${targetNodes.nodeGroup}
     
   generate-share-keys:
