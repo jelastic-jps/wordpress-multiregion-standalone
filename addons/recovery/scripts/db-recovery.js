@@ -33,7 +33,7 @@ var AUTH_ERROR_CODE = 701,
 
 if (!exec) isRestore = true;
 
-api.marketplace.console.WriteLog("start4->");
+api.marketplace.console.WriteLog("start5->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
@@ -131,6 +131,8 @@ function parseOut(data, restorePrimary) {
                 continue;
             }
 
+            api.marketplace.console.WriteLog("item.result->" + item.result);
+            api.marketplace.console.WriteLog("scheme->" + scheme);
             if (item.result == 0) {
                 switch(String(scheme)) {
                     case GALERA:
