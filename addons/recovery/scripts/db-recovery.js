@@ -60,6 +60,8 @@ if (multiregion) {
 scheme = PRIMARY;
 
 if (isRestore) {
+    if (resp.result == AUTH_ERROR_CODE) return resp;
+
     if (!failedNodes.length) {
         return {
             result: !isRestore ? 200 : 201,
@@ -104,7 +106,7 @@ function parseOut(data, restorePrimary) {
         nodeid,
         envName,
         statusesUp = false;
-    
+
     if (data.length) {
         for (var i = 0, n = data.length; i < n; i++) {
             data[i] = JSON.parse(data[i]);
@@ -115,6 +117,21 @@ function parseOut(data, restorePrimary) {
             item = JSON.parse(item);
 
             api.marketplace.console.WriteLog("item->" + item);
+
+            if (item.result == AUTH_ERROR_CODE) {
+                return {
+                    type: WARNING,
+                    message: item.error,
+                    result: AUTH_ERROR_CODE
+                };
+            }
+
+            if (!item.node_type && !isRestore) {
+                resp = setFailedDisplayNode(item.address);
+                if (resp.result != 0) return resp;
+                continue;
+            }
+
             if (item.result == 0) {
                 switch(String(scheme)) {
                     case GALERA:
@@ -240,13 +257,6 @@ function parseOut(data, restorePrimary) {
             }
 
             api.marketplace.console.WriteLog("donorIps -> " + donorIps);
-
-            if (item.result == AUTH_ERROR_CODE) {
-                return {
-                    type: WARNING,
-                    message: item.error
-                };
-            }
         }
 
         if (!failedNodes.length && failedPrimary.length) {
@@ -351,4 +361,25 @@ function cmd(values) {
     }
 
     return resp;
+}
+
+function setFailedDisplayNode(address, removeLabelFailed) {
+    var REGEXP = new RegExp('\\b - ' + FAILED + '\\b', 'gi'),
+        displayName,
+        resp,
+        node;
+
+    removeLabelFailed = !!removeLabelFailed;
+
+    resp = getNodeIdByIp(address);
+    if (resp.result != 0) return resp;
+
+    resp = getNodeInfoById(resp.nodeid);
+    if (resp.result != 0) return resp;
+    node = resp.node;
+
+    if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
+
+    displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
+    return api.env.control.SetNodeDisplayName(envName, session, node.id, displayName);
 }
