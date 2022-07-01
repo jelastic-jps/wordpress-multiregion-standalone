@@ -36,7 +36,6 @@ buttons:
     successText: Cluster recovery is finished successfully!
     submitButtonText: Recover
     action: recovery
-    settings: main
 
 settings:
   submitUnchanged: true
