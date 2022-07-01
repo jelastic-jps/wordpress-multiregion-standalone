@@ -3,8 +3,6 @@ var AUTH_ERROR_CODE = 701,
     UNABLE_RESTORE_CODE = 98,
     FAILED_CLUSTER_CODE = 99,
     envName = "${env.name}",
-    user = getParam('user', ''),
-    password = getParam('password', ''),
     exec = getParam('exec', ''),
     nodeGroup = getParam('nodeGroup', ''),
     multiregion = getParam('multiregion', false),
@@ -33,8 +31,7 @@ var AUTH_ERROR_CODE = 701,
     item,
     resp;
 
-if (user && password) isRestore = true;
-exec = exec || " --diagnostic";
+if (!exec) isRestore = true;
 user = user || "$REPLICA_USER";
 password = password || "$REPLICA_PSWD";
 
@@ -331,9 +328,9 @@ function execRecovery(values) {
         action = exec;
     }
     api.marketplace.console.WriteLog("values->" + values);
-    api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh --mysql-user " + user + " --mysql-password " + password + action);
+    api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + action);
     return cmd({
-        command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh --mysql-user " + user + " --mysql-password " + password + action,
+        command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + action,
         nodeid: values.nodeid || "",
         envName: values.envName || ""
     });
