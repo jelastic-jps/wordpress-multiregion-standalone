@@ -101,7 +101,6 @@ if (isRestore) {
     }
 
 } else {
-    resp = parseOut(resp.responses, false);
     return resp;
 }
 
