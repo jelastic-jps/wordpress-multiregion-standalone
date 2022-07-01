@@ -38,7 +38,7 @@ exec = exec || " --diagnostic";
 user = user || "$REPLICA_USER";
 password = password || "$REPLICA_PSWD";
 
-api.marketplace.console.WriteLog("start->");
+api.marketplace.console.WriteLog("start0->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
@@ -59,6 +59,8 @@ if (multiregion) {
     nodes.push(resp.responses);
     resp = parseOut(nodes, false);
 }
+api.marketplace.console.WriteLog("nodes->" + nodes);
+api.marketplace.console.WriteLog("resp->" + resp);
 scheme = PRIMARY;
 
 if (isRestore) {
