@@ -33,11 +33,12 @@ var AUTH_ERROR_CODE = 701,
 
 if (!exec) isRestore = true;
 
-api.marketplace.console.WriteLog("start5->");
+api.marketplace.console.WriteLog("start6->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
 nodes = resp.responses;
+scheme = PRIMARY;
 
 if (multiregion) {
     resp = execRecovery({
@@ -57,7 +58,6 @@ if (multiregion) {
 api.marketplace.console.WriteLog("nodes->" + nodes);
 api.marketplace.console.WriteLog("resp->" + resp);
 api.marketplace.console.WriteLog("isRestore->" + isRestore);
-scheme = PRIMARY;
 
 if (isRestore) {
     if (resp.result == AUTH_ERROR_CODE) return resp;
