@@ -33,7 +33,7 @@ var AUTH_ERROR_CODE = 701,
 
 if (!exec) isRestore = true;
 
-api.marketplace.console.WriteLog("start2->");
+api.marketplace.console.WriteLog("start3->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
@@ -56,6 +56,7 @@ if (multiregion) {
 }
 api.marketplace.console.WriteLog("nodes->" + nodes);
 api.marketplace.console.WriteLog("resp->" + resp);
+api.marketplace.console.WriteLog("isRestore->" + isRestore);
 scheme = PRIMARY;
 
 if (isRestore) {
@@ -255,6 +256,13 @@ function parseOut(data, restorePrimary) {
             }
 
             api.marketplace.console.WriteLog("donorIps -> " + donorIps);
+        }
+
+        if (!isRestore && (failedNodes.length || failedPrimary.length)) {
+            return {
+                result: FAILED_CLUSTER_CODE,
+                type: SUCCESS
+            };
         }
 
         if (!failedNodes.length && failedPrimary.length) {
