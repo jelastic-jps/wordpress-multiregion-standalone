@@ -58,6 +58,7 @@ onInstall:
   - checkClustering:
       nodeGroup: ${targetNodes.nodeGroup}
       app_id: ${globals.app_id}
+  - installJQTool
   - if (globals.cluster):
     - if (globals.isSecondaryEnv):
       - return:
@@ -236,3 +237,7 @@ actions:
     settings:
       user: ${settings.user:}
       password: ${settings.password:}
+      
+  installJQTool:
+    cmd [cp]: yum -y install jq
+    user: root
