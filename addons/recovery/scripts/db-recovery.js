@@ -32,10 +32,8 @@ var AUTH_ERROR_CODE = 701,
     resp;
 
 if (!exec) isRestore = true;
-user = user || "$REPLICA_USER";
-password = password || "$REPLICA_PSWD";
 
-api.marketplace.console.WriteLog("start1->");
+api.marketplace.console.WriteLog("start2->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
