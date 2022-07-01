@@ -1,387 +1,240 @@
+type: update
+name: Database Cluster Recovery
+id: db-recovery
+description:
+  text: The Database Cluster Recovery add-on performs a comprehensive diagnostic of your MySQL/MariaDB Cluster (Galera, Primary-Primary, Primary-Secondary) to detect any disruptions of the provisioned service. In case of errors, the automatic Cluster Recovery functionality can restore the cluster operability after most of the problems.
+  short: The add-on performs a comprehensive diagnostic of your database cluster and can perform automatic recovery.
 
-var AUTH_ERROR_CODE = 701,
-    UNABLE_RESTORE_CODE = 98,
-    FAILED_CLUSTER_CODE = 99,
-    envName = "${env.name}",
-    user = getParam('user', ''),
-    password = getParam('password', ''),
-    exec = getParam('exec', ''),
-    nodeGroup = getParam('nodeGroup', ''),
-    multiregion = getParam('multiregion', false),
-    envName1 = getParam('envName1', ''),
-    envName2 = getParam('envName2', ''),
-    failedPrimary = [],
-    failedNodes = [],
-    GALERA = "galera",
-    PRIMARY = "primary",
-    SECONDARY = "secondary",
-    FAILED = "failed",
-    SUCCESS = "success",
-    WARNING = "warning",
-    ROOT = "root",
-    DOWN = "down",
-    UP = "up",
-    OK = "ok",
-    isRestore = false,
-    envInfo,
-    nodeGroups,
-    donorIps = {},
-    primaryDonorIp = "",
-    scenario = "",
-    scheme,
-    nodes,
-    item,
-    resp;
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/JE-62666-al/addons/recovery
 
-if (user && password) isRestore = true;
-exec = exec || " --diagnostic";
-user = user || "$REPLICA_USER";
-password = password || "$REPLICA_PSWD";
+targetNodes:
+  nodeGroup: 
+    - sqldb
+    - cp
 
-api.marketplace.console.WriteLog("start->");
-resp = execRecovery();
-if (resp.result != 0) return resp;
+mixins:
+  - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
 
-nodes = resp.responses;
+globals:
+  app_id: db-recovery
+  ssh_root: /root/.ssh/
+  ssh-key: id_rsa_db_monitoring
+  nodeGroup: cp
+  tmp: /tmp/
 
-if (multiregion) {
-    resp = execRecovery({
-        envName: envName == envName1 ? envName2 : envName1
-    });
-    if (resp.result != 0) return resp;
+buttons:
+  - name: diagnostic
+    caption: Cluster Diagnostic
+    confirmText: Run cluster diagnostic?
+    loadingText: Diagnostic is in progress...
+    logsPath: /var/log/db_recovery.log
+    action: diagnostic
+    
+  - name: recovery
+    caption: Cluster Recovery
+    loadingText: Cluster recovery is in progress...
+    successText: Cluster recovery is finished successfully!
+    submitButtonText: Recover
+    action: recovery
+    settings: main
 
-    for (i = 0, n = resp.responses.length; i < n; i++) {
-        if (resp.responses[i]) {
-            resp.responses[i].envName = envName == envName1 ? envName2 : envName1;
-        }
-    }
+settings:
+  submitUnchanged: true
+  fields:
+    - name: user
+      caption: User
+      type: string
+      required: true
+    - name: password
+      caption: Password
+      type: string
+      required: true
 
-    nodes.push(resp.responses);
-    resp = parseOut(nodes, false);
-}
-scheme = PRIMARY;
+onAfterScaleOut[cp]: generate-share-keys
+onAfterRedeployContainer[cp]: generate-share-keys
 
-if (isRestore) {
-    if (resp.result == AUTH_ERROR_CODE) return resp;
+onInstall:
+  - getReplicaUser
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+    - if (globals.isSecondaryEnv):
+      - return:
+          type: success
+    - else:
+      - generate-share-keys:
+          id: ${nodes.cp.master.id}
+      - createFile:
+          envName: ${globals.secondaryEnvName}
+          nodeGroup: ${targetNodes.nodeGroup}
+          app_id: ${globals.app_id}
+      - installAddon:
+          envName: ${globals.secondaryEnvName}
 
-    if (!failedNodes.length) {
-        return {
-            result: !isRestore ? 200 : 201,
-            type: SUCCESS
-        };
-    }
+onUninstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+      - if (!globals.isOppositeExecuted):
+          - markExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+          - if (env.name == globals.primaryEnvName):
+              executeAction:
+                envName: ${globals.secondaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - else:
+              executeAction:
+                envName: ${globals.primaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - removeExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+      - if (globals.isSecondaryEnv):
+          script: |
+            return {result: 0}
+      - else:
+          removeExecutedEnvFile:
+            nodeGroup: ${globals.nodeGroup}
+            app_id: ${globals.app_id}
+            extension: lock
 
-    if (!scenario || !donorIps[scheme]) {
-        return {
-            result: UNABLE_RESTORE_CODE,
-            type: SUCCESS
-        }
-    }
+responses:
+  200:
+    type: success
+    message: Database Cluster is OK! No errors have been discovered.
+    
+  201:
+    type: success
+    message: Database Cluster recovery has been finished successfully!
 
-    for (var k = 0, l = failedNodes.length; k < l; k++) {
-        resp = getNodeIdByIp({
-            address: failedNodes[k].address,
-            envName: failedNodes[k].envName || envName
+  98:
+    type: success
+    message: |
+      An error occurs while recovering the Database Cluster.  
+      Please check the **/var/log/db_recovery.log** log file for details.
+      Follow the [Galera Cluster Recovery](https://docs.jelastic.com/mariadb-galera-recovery/) guide to recover the cluster manually.
+  99:
+    type: success
+    message: |
+      Errors were discovered during the Database Cluster diagnostic.
+      Please check the **/var/log/db_recovery.log** log file for details. Click the "Cluster Recovery" button in the add-on's tab for automatic recovery.
+      Follow the [Galera Cluster Recovery](https://docs.jelastic.com/mariadb-galera-recovery/) guide to recover the cluster manually.
+actions:
+  diagnostic:
+    - checkClustering:
+        nodeGroup: ${targetNodes.nodeGroup}
+        app_id: ${globals.app_id}
+    - script: /scripts/db-recovery.js
+      exec: ' --diagnostic'
+      nodeGroup: ${targetNodes.nodeGroup}
+      multiregion: true
+      envName1: ${globals.primaryEnvName}
+      envName2: ${globals.secondaryEnvName}
+
+  recovery:
+    - checkClustering:
+        nodeGroup: ${targetNodes.nodeGroup}
+        app_id: ${globals.app_id}
+    - script: /scripts/db-recovery.js
+      multiregion: true
+      envName1: ${globals.primaryEnvName}
+      envName2: ${globals.secondaryEnvName}
+      user: ${settings.user:}
+      password: ${settings.password:}
+      nodeGroup: ${targetNodes.nodeGroup}
+    
+  generate-share-keys:
+    - cmd[${this.id}]: |-
+        [ -f ${globals.ssh_root}${globals.ssh-key} ] && rm -f ${globals.ssh_root}${globals.ssh-key};
+        [ -f ${globals.ssh_root}${globals.ssh-key}.pub ] && rm -f ${globals.ssh_root}${globals.ssh-key}.pub;
+        sed -i '/db_monitoring/d' ${globals.ssh_root}authorized_keys;
+        ssh-keygen -t rsa -b 4098 -f ${globals.tmp}${globals.ssh-key} -q -N '' -C 'db_monitoring' <<<y >/dev/null 2>&1
+        chown litespeed:litespeed ${globals.tmp}${globals.ssh-key}*
+      user: root
+    - script: |
+        var resp, key = "";
+        
+        resp = api.environment.file.Read({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeid: "${nodes.cp.master.id}" 
         });
-
         if (resp.result != 0) return resp;
-
-        resp = execRecovery({
-            envName: failedNodes[k].envName || envName,
-            scenario: scenario,
-            donor: donorIps[scheme],
-            nodeid: resp.nodeid
+        key = resp.body;
+        
+        resp =  api.environment.file.Write({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
         });
         if (resp.result != 0) return resp;
-
-        resp = parseOut(resp.responses, false);
-        if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
-    }
-
-} else {
-    resp = parseOut(resp.responses, false);
-    return resp;
-}
-
-function parseOut(data, restorePrimary) {
-    var resp,
-        nodeid,
-        envName,
-        statusesUp = false;
-
-    if (data.length) {
-        for (var i = 0, n = data.length; i < n; i++) {
-            data[i] = JSON.parse(data[i]);
-            nodeid = data[i].nodeid;
-            envName = data[i].envName;
-            item = data[i].out;
-
-            item = JSON.parse(item);
-
-            api.marketplace.console.WriteLog("item->" + item);
-
-            if (item.result == AUTH_ERROR_CODE) {
-                return {
-                    type: WARNING,
-                    message: item.error,
-                    result: AUTH_ERROR_CODE
-                };
-            }
-
-            if (!item.node_type && !isRestore) {
-                resp = setFailedDisplayNode(item.address);
-                if (resp.result != 0) return resp;
-                continue;
-            }
-
-            if (item.result == 0) {
-                switch(String(scheme)) {
-                    case GALERA:
-                        if ((item.service_status == UP || item.status == OK) && item.galera_myisam != OK) {
-                            return {
-                                type: WARNING,
-                                message: "There are MyISAM tables in the Galera Cluster. These tables should be converted in InnoDB type"
-                            }
-                        }
-                        if (item.service_status == DOWN || item.status == FAILED) {
-                            scenario = " --scenario restore_galera";
-                            if (!donorIps[scheme]) {
-                                donorIps[GALERA] = GALERA;
-                            }
-
-                            failedNodes.push({
-                                address: item.address,
-                                scenario: scenario
-                            });
-
-                        }
-
-                        if (!isRestore && failedNodes.length) {
-                            return {
-                                result: FAILED_CLUSTER_CODE,
-                                type: SUCCESS
-                            };
-                        }
-                        break;
-
-                    case PRIMARY:
-                        if (item.service_status == DOWN || item.status == FAILED) {
-                            scenario = " --scenario restore_primary_from_primary";
-
-                            if (!donorIps[scheme] && item.service_status == UP) {
-                                donorIps[PRIMARY] = item.address;
-                            }
-
-                            if (item.service_status == DOWN && item.status == FAILED) {
-                                failedNodes.push({
-                                    address: item.address,
-                                    scenario: scenario,
-                                    envName: envName || ""
-                                });
-                            }
-                            if (!isRestore) {
-                                return {
-                                    result: FAILED_CLUSTER_CODE,
-                                    type: SUCCESS
-                                };
-                            }
-                        }
-
-                        if (item.service_status == UP && item.status == OK) {
-                            donorIps[PRIMARY] = item.address;
-                        }
-                        break;
-
-                    case SECONDARY:
-                        if (item.service_status == DOWN || item.status == FAILED) {
-
-                            if (!isRestore) {
-                                return {
-                                    result: FAILED_CLUSTER_CODE,
-                                    type: SUCCESS
-                                };
-                            }
-
-                            if (item.service_status == DOWN && item.status == FAILED) {
-                                if (item.node_type == PRIMARY) {
-                                    scenario = " --scenario restore_primary_from_secondary";
-                                    failedPrimary.push({
-                                        address: item.address,
-                                        scenario: scenario
-                                    });
-                                } else {
-                                    scenario = " --scenario restore_secondary_from_primary";
-                                    failedNodes.push({
-                                        address: item.address,
-                                        scenario: scenario
-                                    });
-                                }
-                            } else if (item.node_type == PRIMARY) {
-                                scenario = " --scenario restore_primary_from_secondary";
-                                failedPrimary.push({
-                                    address: item.address,
-                                    scenario: scenario
-                                });
-                            } else if (item.status == FAILED) {
-                                scenario = " --scenario restore_secondary_from_primary";
-                                failedNodes.push({
-                                    address: item.address,
-                                    scenario: scenario
-                                });
-                            }
-                        }
-
-                        if (item.node_type == PRIMARY) {
-                            if (item.service_status == UP && item.status == OK) {
-                                primaryDonorIp = item.address;
-                            }
-                        }
-
-                        if (primaryDonorIp) {
-                            donorIps[scheme] = primaryDonorIp;
-                            continue;
-                        }
-
-                        if (item.service_status == UP && item.status == OK) {
-                            donorIps[SECONDARY] = item.address;
-                            statusesUp = true;
-                        }
-                        else if (!statusesUp && item.node_type == SECONDARY && item.service_status == UP) {
-                            donorIps[SECONDARY] = item.address;
-                        }
-                        break;
-                }
-            } else {
-                return {
-                    result: isRestore ? UNABLE_RESTORE_CODE : FAILED_CLUSTER_CODE,
-                    type: SUCCESS
-                };
-            }
-
-            api.marketplace.console.WriteLog("donorIps -> " + donorIps);
-        }
-
-        if (!failedNodes.length && failedPrimary.length) {
-            failedNodes = failedPrimary;
-        }
-
-        if (isRestore && restorePrimary && failedPrimary.length) { //restoreAll
-
-            resp = getNodeIdByIp({
-                address: failedPrimary[0].address
-            });
-            if (resp.result != 0) return resp;
-
-            resp = execRecovery(failedPrimary[0].scenario, donorIps[scheme], resp.nodeid);
-            if (resp.result != 0) return resp;
-            resp = parseOut(resp.responses);
-            if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
-            failedPrimary = [];
-            donorIps[scheme] = primaryDonorIp;
-        }
-
-        return {
-            result: !isRestore ? 200 : 201,
-            type: SUCCESS
-        };
-    }
-}
-
-return {
-    result: !isRestore ? 200 : 201,
-    type: SUCCESS
-};
-
-function getNodeIdByIp(values) {
-    var envInfo,
-        nodes,
-        id = "";
-
-    values = values || {};
-
-    envInfo = getEnvInfo({
-        envName : values.envName
-    });
-    if (envInfo.result != 0) return envInfo;
-
-    nodes = envInfo.nodes;
-
-    for (var i = 0, n = nodes.length; i < n; i++) {
-        if (nodes[i].address == values.address) {
-            id = nodes[i].id;
-            break;
-        }
-    }
-
-    return {
-        result: 0,
-        nodeid : id
-    }
-}
-
-function execRecovery(values) {
-    var action = "";
-
-    values = values || {};
-
-    if (values.scenario && values.donor) {
-        action = values.scenario + " --donor-ip " +  values.donor;
-    } else {
-        action = exec;
-    }
-    api.marketplace.console.WriteLog("values->" + values);
-    api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh --mysql-user " + user + " --mysql-password " + password + action);
-    return cmd({
-        command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.5.0/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh --mysql-user " + user + " --mysql-password " + password + action,
-        nodeid: values.nodeid || "",
-        envName: values.envName || ""
-    });
-}
-
-function getEnvInfo(values) {
-    var resp;
-
-    values = values || {};
-
-    if (!envInfo) {
-        envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
-    }
-
-    return envInfo;
-}
-
-function cmd(values) {
-    var resp;
-
-    values = values || {};
-
-    if (values.nodeid) {
-        api.marketplace.console.WriteLog("ExecCmdById->" + values.nodeid);
-        resp = api.env.control.ExecCmdById(values.envName || envName, session, values.nodeid, toJSON([{ command: values.command }]), true, ROOT);
-    } else {
-        resp = api.env.control.ExecCmdByGroup(values.envName || envName, session, values.nodeGroup || nodeGroup, toJSON([{ command: values.command }]), true, false, ROOT);
-    }
-
-    return resp;
-}
-
-function setFailedDisplayNode(address, removeLabelFailed) {
-    var REGEXP = new RegExp('\\b - ' + FAILED + '\\b', 'gi'),
-        displayName,
-        resp,
-        node;
-
-    removeLabelFailed = !!removeLabelFailed;
-
-    resp = getNodeIdByIp(address);
-    if (resp.result != 0) return resp;
-
-    resp = getNodeInfoById(resp.nodeid);
-    if (resp.result != 0) return resp;
-    node = resp.node;
-
-    if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
-
-    displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
-    return api.env.control.SetNodeDisplayName(envName, session, node.id, displayName);
-}
+        
+        resp =  api.environment.file.Write({
+          envName: "${globals.secondaryEnvName}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        resp = api.environment.file.Read({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeid: "${nodes.cp.master.id}" 
+        });
+        if (resp.result != 0) return resp;
+        key = resp.body;
+        
+        resp = api.environment.file.Write({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        resp = api.environment.file.Write({
+          envName: "${globals.secondaryEnvName}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        return api.env.control.ExecCmdByGroup("${globals.secondaryEnvName}", session, "${globals.nodeGroup}", toJSON([{ command: "sed -i '/db_monitoring/d' ${globals.ssh_root}authorized_keys; mv ${globals.tmp}${globals.ssh-key}* ${globals.ssh_root}; cat ${globals.ssh_root}${globals.ssh-key}.pub >> ${globals.ssh_root}authorized_keys" }]), true, false, "root");
+    - cmd [cp]: |-
+        mv ${globals.tmp}${globals.ssh-key}* ${globals.ssh_root}
+        cat ${globals.ssh_root}${globals.ssh-key}.pub >> ${globals.ssh_root}authorized_keys
+      user: root
+      
+  getReplicaUser:
+    - env.control.GetContainerEnvVarsByGroup[${targetNodes.nodeGroup}]
+    - setGlobals:
+        REPLICA_USER: ${response.object.REPLICA_USER}
+        REPLICA_PSWD: ${response.object.REPLICA_PSWD}
+        
+  installAddon:
+    install: ${baseUrl}/manifest.yml
+    envName: ${this.envName}
+    nodeGroup: ${globals.nodeGroup}
+    settings:
+      user: ${settings.user:}
+      password: ${settings.password:}
