@@ -238,5 +238,5 @@ actions:
       password: ${settings.password:}
       
   installJQTool:
-    cmd [cp]: yum -y install jq
+    cmd [cp]: rpm -qa | grep jq || yum -y install jq
     user: root
