@@ -32,8 +32,9 @@ var AUTH_ERROR_CODE = 701,
     resp;
 
 if (!exec) isRestore = true;
+exec = exec || " --diagnostic";
 
-api.marketplace.console.WriteLog("start6->");
+api.marketplace.console.WriteLog("start7->");
 resp = execRecovery();
 if (resp.result != 0) return resp;
 
