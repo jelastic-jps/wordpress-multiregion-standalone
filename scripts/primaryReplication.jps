@@ -18,6 +18,12 @@ globals:
   cluster_name: ${settings.cluster_name:false}
   
 onInstall:
+  - env.control.AddContainerEnvVars[cp]:
+      vars:
+        REPLICA_USER: ${globals.repl_user}
+        REPLICA_PSWD: ${globals.repl_pass}
+        SCHEME: master
+
   - if ('${globals.pre_install}' == 'true'):
     - if ('${globals.master}' == 'true'):
       - if ('${env.envName}' == '${globals.cluster_name}-1'):
@@ -49,7 +55,7 @@ actions:
   setupReplicaUser:
     cmd[cp]: |-
       MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "CREATE USER '${globals.repl_user}'@'%' IDENTIFIED BY '${globals.repl_pass}';";
-      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "GRANT REPLICATION CLIENT,REPLICATION SLAVE ON *.* TO '${globals.repl_user}'@'%'; FLUSH PRIVILEGES;";
+      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "GRANT USAGE, SUPER, SELECT, RELOAD, LOCK TABLES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '${globals.repl_user}'@'%'; FLUSH PRIVILEGES;";
 
   masterConfiguration:
     - cmd[cp]: |-
