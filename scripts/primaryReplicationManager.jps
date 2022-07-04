@@ -15,7 +15,11 @@ globals:
 onInstall:
   - getClusterEnvs
   - if ('${env.envName}' == '${globals.cluster_name}-1'):
-    - install: /addons/recovery/manifest.yml
+    - install: 
+      jps: /addons/recovery/manifest.yml?_r=${fn.random}
+      nodeGroup: cp
+      targetNodes: cp
+
   - initialPrimaryReplication
   - startPrimaryReplication
 
