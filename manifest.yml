@@ -102,11 +102,11 @@ onInstall:
       domain: ${settings.envName}-1.${globals.domain-1}
   - setProtocol
   - createEnvs
+  - configureLEaddon
   - installAdditionals
   - getEnvNodes
   - installReplications
   - installWordpress
-  - configureLEaddon
   - if (${settings.cdn-addon:false}): installCDNaddon
   
 actions:
