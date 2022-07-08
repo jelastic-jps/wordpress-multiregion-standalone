@@ -1,5 +1,4 @@
 type: install
-jpsVersion: 7.1.1
 targetEditions: wordpress
 name: Multi-Region Standalone (BETA)
 id: wordpress-multiregion-standalone
@@ -12,7 +11,8 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: /images/logo/multiregion-standalone.svg
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/JE-62666
+
 onBeforeInit: https://github.com/jelastic-jps/wordpress/raw/master/wordpress-edition/scripts/onBeforeInit.js
 
 mixins:
@@ -90,7 +90,7 @@ globals:
   db_user: user-${fn.random}
   db_pass: ${fn.password(10)}
   sync_pass: ${fn.password(10)}
-  repl_user: replica-${fn.random}
+  repl_user: repl-${fn.random}
   repl_pass: ${fn.password(10)}
   protocol: http
   wp_admin_pass: ${fn.password(10)}
@@ -102,11 +102,11 @@ onInstall:
       domain: ${settings.envName}-1.${globals.domain-1}
   - setProtocol
   - createEnvs
+  - configureLEaddon
   - installAdditionals
   - getEnvNodes
   - installReplications
   - installWordpress
-  - configureLEaddon
   - if (${settings.cdn-addon:false}): installCDNaddon
   
 actions:

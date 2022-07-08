@@ -18,6 +18,12 @@ globals:
   cluster_name: ${settings.cluster_name:false}
   
 onInstall:
+  - env.control.AddContainerEnvVars[cp]:
+      vars:
+        REPLICA_USER: ${globals.repl_user}
+        REPLICA_PSWD: ${globals.repl_pass}
+        SCHEME: master
+
   - if ('${globals.pre_install}' == 'true'):
     - if ('${globals.master}' == 'true'):
       - if ('${env.envName}' == '${globals.cluster_name}-1'):
@@ -32,11 +38,10 @@ onInstall:
     - getMastersIPs
     - if ('${globals.master}' == 'true'):
       - if ('${env.envName}' == '${globals.cluster_name}-1'):
-        - setupMaterReplication:
-            master: ${globals.master2_ip}
-      - else:
-        - setupMaterReplication:
-            master: ${globals.master1_ip}
+        - cmd[cp]: |-
+            curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh
+            bash /tmp/db-recovery.sh  --scenario restore_primary_from_primary --donor-ip ${globals.master2_ip}
+          user: root
 
 actions:
   setupMainUser:
@@ -49,27 +54,15 @@ actions:
   setupReplicaUser:
     cmd[cp]: |-
       MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "CREATE USER '${globals.repl_user}'@'%' IDENTIFIED BY '${globals.repl_pass}';";
-      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "GRANT REPLICATION CLIENT,REPLICATION SLAVE ON *.* TO '${globals.repl_user}'@'%'; FLUSH PRIVILEGES;";
+      MYSQL_PWD=${globals.db_pass} mysql -u${globals.db_user} -e "GRANT USAGE, SUPER, SELECT, RELOAD, LOCK TABLES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '${globals.repl_user}'@'%'; FLUSH PRIVILEGES;";
 
   masterConfiguration:
-    - cmd[cp]: |-
-        yum downgrade https://downloads.mysql.com/archives/get/p/29/file/mysql-connector-python-8.0.11-1.el7.x86_64.rpm -y &>> /var/log/run.log;
-        yum install https://downloads.mysql.com/archives/get/p/30/file/mysql-utilities-1.6.5-1.el7.noarch.rpm -y &>> /var/log/run.log;
-        ln -s /usr/lib/python2.7/site-packages/mysql/utilities /usr/lib64/python2.7/site-packages/mysql/utilities;
-      user: root
-
     - cmd[cp]: |-
         wget ${globals.db_cluster_path}/configs/master.cnf -O /etc/mysql/conf.d/master.cnf &>> /var/log/run.log;
         sed -i "s/report_host.*/report_host = ${nodes.cp.master.address}/" /etc/mysql/conf.d/master.cnf; 
         sed -i "s/server-id.*/server-id = ${nodes.cp.master.id}/" /etc/mysql/conf.d/master.cnf;
         sed -i "s/auto-increment-offset.*/auto-increment-offset = ${this.increment}/" /etc/mysql/conf.d/master.cnf;
         echo "bind-address = 0.0.0.0" >> /etc/mysql/conf.d/master.cnf;
-
-  setupMaterReplication:
-    - cmd[cp]: |-
-        wget ${globals.db_cluster_path}/scripts/setupReplication.sh -O ~/setupReplication.sh &>> /var/log/run.log
-        bash ~/setupReplication.sh ${this.master} ${nodes.cp.master.address} ${globals.db_user} ${globals.db_pass} ${globals.repl_user} ${globals.repl_pass} &>> /var/log/run.log
-      user: root
 
   getMastersIPs:
      - script: |
