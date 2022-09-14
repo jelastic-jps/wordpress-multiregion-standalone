@@ -16,7 +16,7 @@ mixins:
   - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
 
 globals:
-  app_id: sync_healthcheck
+  app_id: sync-healthcheck
   nodeGroup: cp
 
 buttons:
@@ -30,7 +30,6 @@ onInstall:
   - checkClustering:
       nodeGroup: ${targetNodes.nodeGroup}
       app_id: ${globals.app_id}
-  - installJQTool
   - if (globals.cluster):
     - if (globals.isSecondaryEnv):
       - return:
@@ -43,7 +42,6 @@ onInstall:
       - installAddon:
           envName: ${globals.secondaryEnvName}
 
-
 responses:
   200:
     type: success
@@ -54,12 +52,13 @@ responses:
     message: |
       Errors were discovered during the synchronization diagnostic.
       Synchronization between clusters does not work.
+
 actions:
   diagnostic:
     - checkClustering:
         nodeGroup: ${targetNodes.nodeGroup}
         app_id: ${globals.app_id}
-    - script: /scripts/sych_healthcheck.js
+    - script: /scripts/syncHealthCheck.js
       exec: ' --diagnostic'
       nodeGroup: ${targetNodes.nodeGroup}
       multiregion: true
@@ -70,6 +69,4 @@ actions:
     install: ${baseUrl}/manifest.yml
     envName: ${this.envName}
     nodeGroup: ${globals.nodeGroup}
-    settings:
-      user: ${settings.user:}
-      password: ${settings.password:}
+
