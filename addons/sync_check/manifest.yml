@@ -42,6 +42,39 @@ onInstall:
       - installAddon:
           envName: ${globals.secondaryEnvName}
 
+onUninstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+      - if (!globals.isOppositeExecuted):
+          - markExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+          - if (env.name == globals.primaryEnvName):
+              executeAction:
+                envName: ${globals.secondaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - else:
+              executeAction:
+                envName: ${globals.primaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - removeExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+      - if (globals.isSecondaryEnv):
+          script: |
+            return {result: 0}
+      - else:
+          removeExecutedEnvFile:
+            nodeGroup: ${globals.nodeGroup}
+            app_id: ${globals.app_id}
+            extension: lock
+
 responses:
   200:
     type: success
