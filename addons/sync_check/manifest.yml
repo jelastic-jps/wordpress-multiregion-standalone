@@ -1,6 +1,6 @@
 type: update
 name: Health Check Synchronization
-id: db-recovery
+id: sync-healthcheck
 description:
   text: Health Check Synchronization
   short: Health Check Synchronization
@@ -10,53 +10,24 @@ baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalo
 
 targetNodes:
   nodeGroup: 
-    - sqldb
     - cp
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
 
 globals:
-  app_id: db-recovery
-  ssh_root: /root/.ssh/
-  ssh-key: id_rsa_db_monitoring
+  app_id: sync_healthcheck
   nodeGroup: cp
-  tmp: /tmp/
 
 buttons:
   - name: diagnostic
-    caption: Cluster Diagnostic
-    confirmText: Run cluster diagnostic?
+    caption: Synchronization Diagnostic
+    confirmText: Run synchronization diagnostic?
     loadingText: Diagnostic is in progress...
     logsPath: /var/log/db_recovery.log
     action: diagnostic
     
-  - name: recovery
-    confirmText: |-
-      It is recommended to create <u><i><b><a target="_blank" rel="noopener noreferrer" href="https://www.virtuozzo.com/application-platform-docs/database-backups/">database backup</a></b></i></u> before recovery. Run cluster recovery?
-    caption: Cluster Recovery
-    loadingText: Cluster recovery is in progress...
-    successText: Cluster recovery is finished successfully!
-    submitButtonText: Recover
-    action: recovery
-
-settings:
-  submitUnchanged: true
-  fields:
-    - name: user
-      caption: User
-      type: string
-      required: true
-    - name: password
-      caption: Password
-      type: string
-      required: true
-
-onAfterScaleOut[cp]: generate-share-keys
-onAfterRedeployContainer[cp]: generate-share-keys
-
 onInstall:
-  - getReplicaUser
   - checkClustering:
       nodeGroup: ${targetNodes.nodeGroup}
       app_id: ${globals.app_id}
