@@ -7,7 +7,7 @@ FAIL_CODE=99
 USER="jelastic"
 VALIDATE_SLEEP=10
 
-PRIVATE_KEY='/root/.ssh/id_rsa_db_monitoring'
+PRIVATE_KEY='/root/.ssh/id_rsa_sync_monitoring'
 SSH="timeout 300 ssh -i ${PRIVATE_KEY} -T -o StrictHostKeyChecking=no"
 
 NODE_ADDRESS=$(ifconfig | grep 'inet' | awk '{ print $2 }' |grep -E '^(192\.168|10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.)')
