@@ -38,6 +38,8 @@ onInstall:
       - return:
           type: success
     - else:
+      - generate-share-keys:
+          id: ${nodes.cp.master.id}
       - createFile:
           envName: ${globals.secondaryEnvName}
           nodeGroup: ${targetNodes.nodeGroup}
@@ -78,19 +80,7 @@ onUninstall:
             app_id: ${globals.app_id}
             extension: lock
 
-responses:
-  200:
-    type: success
-    message: Synchronization is OK! No errors have been discovered.
-    
-  99:
-    type: success
-    message: |
-      Errors were discovered during the synchronization diagnostic.
-      Synchronization between clusters does not work.
-
 actions:
-
   generate-share-keys:
     - cmd[${this.id}]: |-
         [ -f ${globals.ssh_root}${globals.ssh-key} ] && rm -f ${globals.ssh_root}${globals.ssh-key};
@@ -171,13 +161,25 @@ actions:
     - checkClustering:
         nodeGroup: ${targetNodes.nodeGroup}
         app_id: ${globals.app_id}
-    - script: /scripts/syncHealthCheck.js
-      exec: ' --diagnostic'
-      nodeGroup: ${targetNodes.nodeGroup}
-      multiregion: true
-      envName1: ${globals.primaryEnvName}
-      envName2: ${globals.secondaryEnvName}
-        
+    - script: |
+        var onAfterReturn = { setGlobals: {} },
+            glbs = onAfterReturn.setGlobals;
+        var resp = jelastic.env.control.GetEnvInfo("${globals.secondaryEnvName}", session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? glbs["secondaryIP"] = k[i].address : 0;
+        }
+        return { result: 0, onAfterReturn: onAfterReturn };
+    - api: env.control.ExecCmdByGroup
+      envName: ${globals.primaryEnvName}
+      nodeGroup: cp
+      commandList:
+        - command: |-
+            curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagmostic ${globals.secondaryIP};
+
+    - log: ${response}
+
   installAddon:
     install: ${baseUrl}/manifest.yml
     envName: ${this.envName}
