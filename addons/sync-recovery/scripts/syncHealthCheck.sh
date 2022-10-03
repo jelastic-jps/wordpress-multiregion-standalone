@@ -2,7 +2,7 @@
 
 WP_PATH="/var/www/webroot/ROOT"
 RUN_LOG="/var/log/sync_diagnostic.log"
-SUCCESS_CODE=0
+SUCCESS_CODE=200
 FAIL_CODE=99
 USER="jelastic"
 VALIDATE_SLEEP=10
