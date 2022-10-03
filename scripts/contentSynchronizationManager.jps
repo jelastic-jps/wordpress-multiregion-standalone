@@ -2,7 +2,7 @@ jpsType: update
 id: multiregions-content-synchronization-manager
 name: Multi-Regions Content Synchronization Manager
 description: Multi-Regions Content Synchronization Manager
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218
 
 globals:
   sync_pass: ${settings.sync_pass}
@@ -10,6 +10,12 @@ globals:
 
 onInstall:
   - getClusterEnvs
+  - if ('${env.envName}' == '${globals.cluster_name}-1'):
+    - install: 
+      jps: /addons/sync-recovery/manifest.yml?_r=${fn.random}
+      nodeGroup: cp
+      targetNodes: cp
+  
   - initialContentSynchronization
 
 actions:
