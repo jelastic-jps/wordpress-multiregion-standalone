@@ -83,14 +83,14 @@ onUninstall:
 responses:
   200:
     type: success
-    message: Database Cluster is OK! No errors have been discovered.
+    message: Content synchronization between clusters is OK! No errors have been discovered.
     
   99:
     type: success
     message: |
       Errors were discovered during the Database Cluster diagnostic.
-      Please check the **/var/log/db_recovery.log** log file for details. Click the "Cluster Recovery" button in the add-on's tab for automatic recovery.
-      Follow the [Galera Cluster Recovery](https://docs.jelastic.com/mariadb-galera-recovery/) guide to recover the cluster manually.
+      Please check the **/var/log/sync_recovery.log** log file for details.
+      Follow the [Content Synchronization Recovery](https://docs.jelastic.com/mariadb-galera-recovery/) guide to recover the synchronization manually.
 
 actions:
   generate-share-keys:
@@ -174,24 +174,19 @@ actions:
         nodeGroup: ${targetNodes.nodeGroup}
         app_id: ${globals.app_id}
     - script: |
-        var onAfterReturn = { setGlobals: {} },
-            glbs = onAfterReturn.setGlobals;
-        var resp = jelastic.env.control.GetEnvInfo("${globals.secondaryEnvName}", session);
+        var secondary_ip, resp, command;
+        resp = jelastic.env.control.GetEnvInfo("${globals.secondaryEnvName}", session);
         if (resp.result != 0) return resp;
         for (var i = 0, k = resp.nodes; i < k.length; i++) {
           if (k[i].nodeGroup == 'cp')
-              k[i].ismaster ? glbs["secondaryIP"] = k[i].address : 0;
+              k[i].ismaster ? secondary_ip = k[i].address : 0;
         }
-        return { result: 0, onAfterReturn: onAfterReturn };
-    - api: env.control.ExecCmdByGroup
-      envName: ${globals.primaryEnvName}
-      nodeGroup: cp
-      commandList:
-        - command: |-
-            curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagmostic ${globals.secondaryIP};
-
-    - log: ${response}
-
+        var command = "curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagnostic " + secondary_ip;
+        resp = api.env.control.ExecCmdByGroup('${globals.primaryEnvName}', session, 'cp', toJSON([{ "command": command }]), true, false, "root");
+        if (resp.result != 0) return resp;
+        data = JSON.parse(resp.responses[0].out);
+        return data.result;
+        
   installAddon:
     install: ${baseUrl}/manifest.yml
     envName: ${this.envName}
