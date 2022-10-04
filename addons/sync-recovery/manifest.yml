@@ -6,7 +6,7 @@ description:
   short: The add-on performs a diagnostic of your content synchronization between clusters.
 logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync_check
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync_recovery
 
 targetNodes:
   nodeGroup: 
