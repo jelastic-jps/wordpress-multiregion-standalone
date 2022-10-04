@@ -2,9 +2,9 @@ type: update
 name: Health Check Synchronization
 id: sync-recovery
 description:
-  text: Health Check Synchronization
-  short: Health Check Synchronization
-logo: https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/images/database-recovery.png
+  text: The Health Check Synchronization add-on performs a diagnostic of content synchronization between clusters. 
+  short: The add-on performs a diagnostic of your content synchronization between clusters.
+logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
 
 baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync_check
 
