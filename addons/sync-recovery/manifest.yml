@@ -88,9 +88,9 @@ responses:
   99:
     type: success
     message: |
-      Errors were discovered during the Database Cluster diagnostic.
+      Errors were discovered during the Content Synchronization diagnostic.
       Please check the **/var/log/sync_recovery.log** log file for details.
-      Follow the [Content Synchronization Recovery](https://docs.jelastic.com/mariadb-galera-recovery/) guide to recover the synchronization manually.
+      Follow the [Content Synchronization Recovery](https://docs.jelastic.com/sync-recovery/) guide to recover the synchronization manually.
 
 actions:
   generate-share-keys:
