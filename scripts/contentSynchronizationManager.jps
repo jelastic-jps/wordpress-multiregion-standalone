@@ -10,12 +10,6 @@ globals:
 
 onInstall:
   - getClusterEnvs
-  - if ('${env.envName}' == '${globals.cluster_name}-1'):
-    - install: 
-      jps: /addons/sync-recovery/manifest.yml?_r=${fn.random}
-      nodeGroup: cp
-      targetNodes: cp
-  
   - initialContentSynchronization
 
 actions:
