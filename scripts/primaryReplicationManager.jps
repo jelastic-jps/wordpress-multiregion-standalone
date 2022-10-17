@@ -19,6 +19,10 @@ onInstall:
       jps: /addons/db-recovery/manifest.yml?_r=${fn.random}
       nodeGroup: cp
       targetNodes: cp
+    - install: 
+      jps: /addons/sync-recovery/manifest.yml?_r=${fn.random}
+      nodeGroup: cp
+      targetNodes: cp
 
   - initialPrimaryReplication
   - startPrimaryReplication
