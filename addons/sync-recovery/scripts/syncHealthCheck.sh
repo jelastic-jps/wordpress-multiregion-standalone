@@ -35,8 +35,7 @@ execSshAction(){
   action_to_base64=$(echo $action|base64 -w 0)
   stderr=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { log "${message}...done"; } || {
     error="${message} failed, please check ${RUN_LOG} for details"
-    execArgResponse "${result}" "errOut" "${error}"
-    log "${message}...failed\n==============ERROR==================\n${stderr}\n============END ERROR================";
+    log "${message}...failed\n${stdout}\n";
     exit 0
   }
 }
@@ -49,8 +48,7 @@ execSshReturn(){
   action_to_base64=$(echo $action|base64 -w 0)
   stdout=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { echo ${stdout}; log "${message}...done"; } || {
     error="${message} failed, please check ${RUN_LOG} for details"
-    execArgResponse "${result}" "errOut" "${error}"
-    log "${message}...failed\n==============ERROR==================\n${stdout}\n============END ERROR================";
+    log "${message}...failed\n${stdout}\n";
     exit 0
   }
 }
