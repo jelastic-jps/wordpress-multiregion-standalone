@@ -37,6 +37,7 @@ execSshAction(){
     error="${message} failed, please check ${RUN_LOG} for details"
     execArgResponse "${result}" "errOut" "${error}"
     log "${message}...failed\n";
+    exit 0;
   }
 }
 
@@ -50,6 +51,7 @@ execSshReturn(){
     error="${message} failed, please check ${RUN_LOG} for details"
     execArgResponse "${result}" "errOut" "${error}"
     log "${message}...failed\n";
+    exit 0;
   }
 }
 
