@@ -27,18 +27,6 @@ execArgResponse(){
     echo ${output}
 }
 
-execAction(){
-    local action="$1"
-    local message="$2"
-
-    stdout=$( { ${action}; } 2>&1 ) && { log "${message}...done";  } || {
-        error="${message} failed, please check ${RUN_LOG} for details"
-        execArgResponse "${FAIL_CODE}" "errOut" "${stdout}"
-        log "${message}...failed\n==============ERROR==================\n${stdout}\n============END ERROR================";
-        exit 0
-    }
-}
-
 execSshAction(){
   local action="$1"
   local message="$2"
@@ -52,7 +40,6 @@ execSshAction(){
     exit 0
   }
 }
-
 
 execSshReturn(){
   local action="$1"
@@ -72,7 +59,7 @@ createTestFile(){
     local node=$1
     local command="${SSH} ${node} \" su ${USER} -c 'touch ${TMPFILE}'\""
     local message="[Node: ${node}] Сreate temporary check file ${TMPFILE}"
-    execSshAction "$command" "$message" || return ${FAIL_CODE}
+    execSshAction "$command" "$message"
 }
 
 validateTestFile(){
@@ -86,39 +73,71 @@ deleteTestFile(){
     local node=$1
     local command="${SSH} ${node} \"su ${USER} -c ' [[ -f ${TMPFILE} ]] && { rm -f ${TMPFILE}; }' \""
     local message="[Node: ${node}] Delete temporary test file ${TMPFILE}"
-    execSshAction "$command" "$message" || return ${FAIL_CODE}
+    execSshAction "$command" "$message"
 }
 
-fileDiagmostic(){
+checkLsyncServiceStatus(){
+    local node=$1
+    local command="${SSH} ${node} \"ps aux | grep '/usr/bin/lsync' | grep -v grep | wc -l\""
+    local message="[Node: ${node}] Checking lsync service"
+    status=$(execSshReturn "$command" "$message")
+    if [[ "$status" -lt 1 ]]; then
+      log "[Node: ${node}] Lsync service is not running...FAILED\n"
+      return ${FAIL_CODE};
+    else
+      log "[Node: ${node}] Lsync service is running...SUCCESS\n"
+    fi
+}
+
+checkRsyncServiceStatus(){
+    local node=$1
+    local command="${SSH} ${node} \"ps aux | grep '/usr/bin/rsync' | grep -v grep | wc -l\""
+    local message="[Node: ${node}] Checking rsync service"
+    status=$(execSshReturn "$command" "$message")
+    if [[ "$status" -lt 1 ]]; then
+        log "[Node: ${node}] Rsync service is not running...FAILED\n"
+        return ${FAIL_CODE}
+    else
+        log "[Node: ${node}] Rsync service is running...SUCCESS\n"
+    fi
+}
+
+fileDiagnostic(){
     local src_node=$1
     local dst_node=$2
-    local result=${FAIL_CODE}
-
     TMPFILE=$(mktemp -u ${WP_PATH}/diagnostic.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX);
     createTestFile "${src_node}"
     sleep ${VALIDATE_SLEEP}
     validateTestFile "${dst_node}"
+    deleteTestFile "${dst_node}"
     deleteTestFile "${src_node}"
-    echo $status
+    if [[ "${status}" == "true" ]] ; then
+        log "[Node: ${node}] The file synchronization from ${src_node} to ${dst_node} is working...SUCCESS"
+    else
+        log "[Node: ${node}] The file synchronization from ${src_node} to ${dst_node} is not working...FAILED"
+        return ${FAIL_CODE}
+    fi
 }
 
 diagnostic(){
     local local_address=${NODE_ADDRESS}
     local remote_address=$2
-    local result=${FAIL_CODE}
-
-    check1=$(fileDiagmostic "${local_address}" "${remote_address}")
-    check2=$(fileDiagmostic  "${remote_address}" "${local_address}")
-
-    if [[ "${check1}" == "true" ]] && [[ "${check2}" == "true" ]]; then
+    local result=${SUCCESS_CODE}
+    checkLsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
+    checkRsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
+    checkLsyncServiceStatus "${remote_address}" || { result=${FAIL_CODE}; };
+    checkRsyncServiceStatus "${remote_address}" || { result=${FAIL_CODE}; };
+    checkLsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
+    fileDiagnostic "${local_address}" "${remote_address}"  || { result=${FAIL_CODE}; };
+    fileDiagnostic  "${remote_address}" "${local_address}" || { result=${FAIL_CODE}; };
+    if [[ "${result}" == ${SUCCESS_CODE} ]]; then
         log "[ SUCCESS ] The file synchronization between clusters is: OK"
         execArgResponse "${SUCCESS_CODE}" "out" "The file synchronization between clusters is: OK"
     else
         log "[ ERROR ] File synchronization between clusters does not work"
-        execArgResponse "${result}" "out" "The file synchronization between clusters does not work"
+        execArgResponse "${FAIL_CODE}" "out" "The file synchronization between clusters does not work, please check ${RUN_LOG} for details"
         exit 0
     fi
-
 }
 
 case ${1} in
