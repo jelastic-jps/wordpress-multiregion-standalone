@@ -112,9 +112,9 @@ fileDiagnostic(){
     deleteTestFile "${dst_node}"
     deleteTestFile "${src_node}"
     if [[ "${status}" == "true" ]] ; then
-        log "[Node: ${node}] The file synchronization from ${src_node} to ${dst_node} is working...SUCCESS"
+        log "The file synchronization from ${src_node} to ${dst_node} is working...SUCCESS"
     else
-        log "[Node: ${node}] The file synchronization from ${src_node} to ${dst_node} is not working...FAILED"
+        log "The file synchronization from ${src_node} to ${dst_node} is not working...FAILED"
         return ${FAIL_CODE}
     fi
 }
@@ -127,7 +127,6 @@ diagnostic(){
     checkRsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
     checkLsyncServiceStatus "${remote_address}" || { result=${FAIL_CODE}; };
     checkRsyncServiceStatus "${remote_address}" || { result=${FAIL_CODE}; };
-    checkLsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
     fileDiagnostic "${local_address}" "${remote_address}"  || { result=${FAIL_CODE}; };
     fileDiagnostic  "${remote_address}" "${local_address}" || { result=${FAIL_CODE}; };
     if [[ "${result}" == ${SUCCESS_CODE} ]]; then
