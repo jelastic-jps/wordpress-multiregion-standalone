@@ -37,7 +37,6 @@ execSshAction(){
     error="${message} failed, please check ${RUN_LOG} for details"
     execArgResponse "${result}" "errOut" "${error}"
     log "${message}...failed\n";
-    exit 0
   }
 }
 
@@ -51,7 +50,6 @@ execSshReturn(){
     error="${message} failed, please check ${RUN_LOG} for details"
     execArgResponse "${result}" "errOut" "${error}"
     log "${message}...failed\n";
-    exit 0
   }
 }
 
@@ -82,10 +80,10 @@ checkLsyncServiceStatus(){
     local message="[Node: ${node}] Checking lsync service"
     status=$(execSshReturn "$command" "$message")
     if [[ "$status" -lt 1 ]]; then
-      log "[Node: ${node}] Lsync service is not running...FAILED\n"
+      log "[Node: ${node}] Lsync service is not running...FAILED"
       return ${FAIL_CODE};
     else
-      log "[Node: ${node}] Lsync service is running...SUCCESS\n"
+      log "[Node: ${node}] Lsync service is running...SUCCESS"
     fi
 }
 
@@ -95,10 +93,10 @@ checkRsyncServiceStatus(){
     local message="[Node: ${node}] Checking rsync service"
     status=$(execSshReturn "$command" "$message")
     if [[ "$status" -lt 1 ]]; then
-        log "[Node: ${node}] Rsync service is not running...FAILED\n"
+        log "[Node: ${node}] Rsync service is not running...FAILED"
         return ${FAIL_CODE}
     else
-        log "[Node: ${node}] Rsync service is running...SUCCESS\n"
+        log "[Node: ${node}] Rsync service is running...SUCCESS"
     fi
 }
 
@@ -135,7 +133,6 @@ diagnostic(){
     else
         log "[ ERROR ] File synchronization between clusters does not work"
         execArgResponse "${FAIL_CODE}" "out" "The file synchronization between clusters does not work, please check ${RUN_LOG} for details"
-        exit 0
     fi
 }
 
