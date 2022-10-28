@@ -5,7 +5,6 @@ RUN_LOG="/var/log/sync_diagnostic.log"
 SUCCESS_CODE=200
 FAIL_CODE=99
 USER="jelastic"
-VALIDATE_SLEEP=10
 
 PRIVATE_KEY='/root/.ssh/id_rsa_sync_monitoring'
 SSH="timeout 300 ssh -i ${PRIVATE_KEY} -T -o StrictHostKeyChecking=no"
@@ -50,7 +49,7 @@ createTestFile(){
 
 validateTestFile(){
     local node=$1
-    local command="${SSH} ${node} \"su ${USER} -c '[[ -f ${TMPFILE} ]] && { echo "true"; } || { exit 1; }'\""
+    local command="${SSH} ${node} \"for retry in $(seq 1 10);  do [[ -f ${TMPFILE} ]] && { echo 'true'; exit 0; }; sleep 5; done; exit 1\""
     local message="[Node: ${node}] Validate temporary check file ${TMPFILE}"
     status=$(execSshReturn "$command" "[Node: ${node}] Validate temporary check file ${TMPFILE}")
 }
@@ -93,7 +92,6 @@ fileDiagnostic(){
     local dst_node=$2
     TMPFILE=$(mktemp -u ${WP_PATH}/diagnostic.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX);
     createTestFile "${src_node}"
-    sleep ${VALIDATE_SLEEP}
     validateTestFile "${dst_node}"
     deleteTestFile "${dst_node}"
     deleteTestFile "${src_node}"
@@ -109,7 +107,7 @@ diagnostic(){
     local local_address=${NODE_ADDRESS}
     local remote_address=$2
     local result=${SUCCESS_CODE}
-    
+
     log ">>>BEGIN DIAGNOSTIC"
     checkLsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
     checkRsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
