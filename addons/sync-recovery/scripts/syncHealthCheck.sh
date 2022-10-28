@@ -109,6 +109,8 @@ diagnostic(){
     local local_address=${NODE_ADDRESS}
     local remote_address=$2
     local result=${SUCCESS_CODE}
+    
+    log ">>>BEGIN DIAGNOSTIC"
     checkLsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
     checkRsyncServiceStatus "${local_address}" || { result=${FAIL_CODE}; };
     checkLsyncServiceStatus "${remote_address}" || { result=${FAIL_CODE}; };
@@ -122,11 +124,11 @@ diagnostic(){
         log "[ ERROR ] File synchronization between clusters does not work"
         execArgResponse "${FAIL_CODE}" "out" "The file synchronization between clusters does not work, please check ${RUN_LOG} for details"
     fi
+    log ">>>END DIAGNOSTIC"
 }
 
 case ${1} in
     diagnostic)
         diagnostic "$@"
         ;;
-
 esac
