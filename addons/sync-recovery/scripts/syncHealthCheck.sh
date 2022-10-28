@@ -30,29 +30,15 @@ execArgResponse(){
 execSshAction(){
   local action="$1"
   local message="$2"
-  local result=${FAIL_CODE}
-
   action_to_base64=$(echo $action|base64 -w 0)
-  stderr=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { log "${message}...done"; } || {
-    error="${message} failed, please check ${RUN_LOG} for details"
-    execArgResponse "${result}" "errOut" "${error}"
-    log "${message}...failed\n";
-    exit 0;
-  }
+  stderr=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { log "${message}...done"; } || { log "${message}...failed\n"; }
 }
 
 execSshReturn(){
   local action="$1"
   local message="$2"
-  local result=${FAIL_CODE}
-
   action_to_base64=$(echo $action|base64 -w 0)
-  stdout=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { echo ${stdout}; log "${message}...done"; } || {
-    error="${message} failed, please check ${RUN_LOG} for details"
-    execArgResponse "${result}" "errOut" "${error}"
-    log "${message}...failed\n";
-    exit 0;
-  }
+  stdout=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { echo ${stdout}; log "${message}...done"; } || { log "${message}...failed\n"; }
 }
 
 createTestFile(){
