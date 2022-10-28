@@ -27,7 +27,7 @@ buttons:
     caption: Synchronization Diagnostic
     confirmText: Run synchronization diagnostic?
     loadingText: Diagnostic is in progress...
-    logsPath: /var/log/sync_recovery.log
+    logsPath: /var/log/sync_diagnostic.log
     action: diagnostic
     
 onInstall:
@@ -90,7 +90,7 @@ responses:
     type: success
     message: |
       Errors were discovered during the Content Synchronization diagnostic.
-      Please check the **/var/log/sync_recovery.log** log file for details.
+      Please check the **/var/log/sync_diagnostic.log** log file for details.
 
 actions:
   generate-share-keys:
