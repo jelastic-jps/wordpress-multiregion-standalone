@@ -31,14 +31,14 @@ execSshAction(){
   local action="$1"
   local message="$2"
   action_to_base64=$(echo $action|base64 -w 0)
-  stderr=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { log "${message}...done"; } || { log "${message}...failed\n"; }
+  stderr=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { log "${message}...done"; } || { log "${message}...failed"; }
 }
 
 execSshReturn(){
   local action="$1"
   local message="$2"
   action_to_base64=$(echo $action|base64 -w 0)
-  stdout=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { echo ${stdout}; log "${message}...done"; } || { log "${message}...failed\n"; }
+  stdout=$( { sh -c "$(echo ${action_to_base64}|base64 -d)"; } 2>&1 ) && { echo ${stdout}; log "${message}...done"; } || { log "${message}...failed"; }
 }
 
 createTestFile(){
