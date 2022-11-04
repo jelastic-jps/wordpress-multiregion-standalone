@@ -87,7 +87,7 @@ responses:
     message: Content synchronization status between environments is OK! No errors have been discovered.
     
   99:
-    type: error
+    type: success
     message: |
       Content synchronization status between environments is FAIL!
       Please, check the /var/log/sync_diagnostic.log log file for details.
