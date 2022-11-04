@@ -43,7 +43,7 @@ execSshReturn(){
 createTestFile(){
     local node=$1
     local command="${SSH} ${node} \" su ${USER} -c 'touch ${TMPFILE}'\""
-    local message="[Node: ${node}] Сreate temporary check file ${TMPFILE}"
+    local message="[Node: ${node}] Сreate temporary test file ${TMPFILE}"
     execSshAction "$command" "$message"
 }
 
@@ -51,7 +51,7 @@ validateTestFile(){
     local node=$1
     local command="${SSH} ${node} \"for retry in $(seq 1 10);  do [[ -f ${TMPFILE} ]] && { echo 'true'; exit 0; }; sleep 5; done; exit 1\""
     local message="[Node: ${node}] Validate temporary check file ${TMPFILE}"
-    status=$(execSshReturn "$command" "[Node: ${node}] Validate temporary check file ${TMPFILE}")
+    status=$(execSshReturn "$command" "[Node: ${node}] Validate temporary test file ${TMPFILE}")
 }
 
 deleteTestFile(){
@@ -117,10 +117,10 @@ diagnostic(){
     fileDiagnostic  "${remote_address}" "${local_address}" || { result=${FAIL_CODE}; };
     if [[ "${result}" == ${SUCCESS_CODE} ]]; then
         log "[ SUCCESS ] The file synchronization between clusters is: OK"
-        execArgResponse "${SUCCESS_CODE}" "out" "The file synchronization between clusters is: OK"
+        execArgResponse "${SUCCESS_CODE}" "out" "The file synchronization between environments is: OK"
     else
         log "[ ERROR ] File synchronization between clusters does not work"
-        execArgResponse "${FAIL_CODE}" "out" "The file synchronization between clusters does not work, please check ${RUN_LOG} for details"
+        execArgResponse "${FAIL_CODE}" "out" "The file synchronization between environments does not work, please check ${RUN_LOG} for details"
     fi
     log ">>>END DIAGNOSTIC"
 }
