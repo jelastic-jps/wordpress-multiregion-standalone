@@ -1,9 +1,9 @@
 type: update
-name: Health Check Synchronization
+name: Content Synchronization Diagnostic
 id: sync-recovery
 description:
-  text: The Health Check Synchronization add-on performs a diagnostic of content synchronization between clusters. 
-  short: The add-on performs a diagnostic of your content synchronization between clusters.
+  text: The add-on performs a diagnostic of your content synchronization between environments. 
+  short: The add-on performs a diagnostic of your content synchronization between environments.
 logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
 
 baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery
@@ -84,13 +84,13 @@ onUninstall:
 responses:
   200:
     type: success
-    message: Content synchronization between clusters is OK! No errors have been discovered.
+    message: Content synchronization status between environments is OK! No errors have been discovered.
     
   99:
     type: success
     message: |
-      Errors were discovered during the Content Synchronization diagnostic.
-      Please check the **/var/log/sync_diagnostic.log** log file for details.
+      Content synchronization status between environments is FAIL!
+      Please, check the /var/log/sync_diagnostic.log log file for details.
 
 actions:
   generate-share-keys:
