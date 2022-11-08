@@ -119,7 +119,7 @@ diagnostic(){
         log "[ SUCCESS ] The file synchronization between environments is: OK"
         execArgResponse "${SUCCESS_CODE}" "out" "The file synchronization between environments is: OK"
     else
-        log "[ ERROR ] File synchronization between clusters does not work"
+        log "[ ERROR ] File synchronization between environments does not work"
         execArgResponse "${FAIL_CODE}" "out" "The file synchronization between environments does not work, please check ${RUN_LOG} for details"
     fi
     log ">>>END DIAGNOSTIC"
