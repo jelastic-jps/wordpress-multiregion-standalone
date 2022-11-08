@@ -116,7 +116,7 @@ diagnostic(){
     fileDiagnostic "${local_address}" "${remote_address}"  || { result=${FAIL_CODE}; };
     fileDiagnostic  "${remote_address}" "${local_address}" || { result=${FAIL_CODE}; };
     if [[ "${result}" == ${SUCCESS_CODE} ]]; then
-        log "[ SUCCESS ] The file synchronization between clusters is: OK"
+        log "[ SUCCESS ] The file synchronization between environments is: OK"
         execArgResponse "${SUCCESS_CODE}" "out" "The file synchronization between environments is: OK"
     else
         log "[ ERROR ] File synchronization between clusters does not work"
