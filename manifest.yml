@@ -1,6 +1,6 @@
 type: install
 targetEditions: wordpress
-name: Multi-Region Standalone (BETA)
+name: Multi-Region WordPress Standalone (BETA)
 id: wordpress-multiregion-standalone
 categories:
   - apps/clusters
