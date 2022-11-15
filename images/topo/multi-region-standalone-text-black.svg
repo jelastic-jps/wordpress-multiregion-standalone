@@ -20,7 +20,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -33,15 +33,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1017"
+     inkscape:window-width="3200"
+     inkscape:window-height="1675"
      id="namedview432"
      showgrid="false"
-     inkscape:zoom="1.1818614"
-     inkscape:cx="344.45823"
-     inkscape:cy="126.04917"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:zoom="1.6714044"
+     inkscape:cx="112.94537"
+     inkscape:cy="56.73792"
+     inkscape:window-x="-13"
+     inkscape:window-y="-13"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg430" />
   <defs
@@ -49,6 +49,22 @@
     <style
        id="style2">.cls-1{fill:#7889a8;}.cls-2{fill:#5b6b8d;}.cls-20,.cls-26,.cls-3{fill:#fff;}.cls-4{fill:#003a70;}.cls-5{fill:#ffa400;}.cls-6{fill:#58596c;}.cls-7{fill:#ff5856;}.cls-8{fill:#db4040;}.cls-9{fill:#cc3636;}.cls-10{fill:#ffdc67;}.cls-11{fill:#ffb456;}.cls-12{fill:#fc974d;}.cls-13{fill:#f47f31;}.cls-14{fill:#912626;}.cls-15{fill:#c6302b;}.cls-16{fill:#621b1c;}.cls-17{fill:#9a2928;}.cls-18{fill:#002b64;}.cls-19{fill:#d77758;}.cls-20{font-size:12px;}.cls-20,.cls-26{font-family:Tahoma;}.cls-21{letter-spacing:-0.06em;}.cls-22{fill:#5e8cda;}.cls-23{fill:#093071;}.cls-24{fill:#f5cd21;}.cls-25{fill:#fddd75;}.cls-26{font-size:14px;}.cls-27{letter-spacing:0.01em;}.cls-28{letter-spacing:-0.03em;}.cls-29{letter-spacing:-0.01em;}.cls-30{letter-spacing:-0.04em;}.cls-31{letter-spacing:0em;}.cls-32{letter-spacing:-0.01em;}.cls-33{letter-spacing:0em;}.cls-34{letter-spacing:0em;}.cls-35{letter-spacing:-0.01em;}.cls-36{letter-spacing:-0.02em;}.cls-37{fill:#556ae5;}.cls-38{letter-spacing:-0.01em;}</style>
   </defs>
+  <line
+     class="cls-1"
+     x1="229.81"
+     y1="255.35001"
+     x2="244.81"
+     y2="255.35001"
+     id="line362"
+     style="fill:#7889a8" />
+  <rect
+     class="cls-1"
+     x="229.81"
+     y="254.85001"
+     width="15"
+     height="1"
+     id="rect364"
+     style="fill:#7889a8;stroke:#7889a8;stroke-opacity:1" />
   <path
      class="cls-1"
      d="m 206.25,157.24 a 5,5 0 0 1 5,5 v 229.85 a 5,5 0 0 1 -5,5 H 7 a 5,5 0 0 1 -5,-5 V 162.24 a 5,5 0 0 1 5,-5 h 199.25 m 0,-2 H 7 a 7,7 0 0 0 -7,7 v 229.85 a 7,7 0 0 0 7,7 h 199.25 a 7,7 0 0 0 7,-7 V 162.24 a 7,7 0 0 0 -7,-7 z"
@@ -1092,22 +1108,6 @@
      points="363.09 130.03 360.76 130.03 363.76 135.03 366.76 130.03 364.42 130.03"
      id="polyline360"
      style="fill:#556ae5" />
-  <line
-     class="cls-1"
-     x1="229.81"
-     y1="255.35001"
-     x2="244.81"
-     y2="255.35001"
-     id="line362"
-     style="fill:#7889a8" />
-  <rect
-     class="cls-1"
-     x="229.81"
-     y="254.85001"
-     width="15"
-     height="1"
-     id="rect364"
-     style="fill:#7889a8" />
   <polyline
      class="cls-1"
      points="243.81 256.01 243.81 258.35 248.81 255.34 243.81 252.34 243.81 254.68"
@@ -1118,16 +1118,6 @@
      points="243.31,259.23 243.31,256.01 244.31,256.01 244.31,257.46 247.84,255.34 244.31,253.23 244.31,254.68 243.31,254.68 243.31,251.46 249.78,255.34 "
      id="polygon368"
      style="fill:#7889a8" />
-  <polyline
-     class="cls-1"
-     points="232.53 254.68 232.53 252.34 227.53 255.34 232.53 258.35 232.53 256.01"
-     id="polyline370"
-     style="fill:#000000" />
-  <polygon
-     class="cls-1"
-     points="233.03,251.46 233.03,254.68 232.03,254.68 232.03,253.23 228.5,255.34 232.03,257.46 232.03,256.01 233.03,256.01 233.03,259.23 226.56,255.34 "
-     id="polygon372"
-     style="fill:#000000" />
   <text
      id="text374" />
   <text
@@ -1289,4 +1279,16 @@
      id="path426"
      inkscape:connector-curvature="0"
      style="fill:#556ae5" />
+  <polyline
+     transform="matrix(-1,0,0,1,475.06,0.0100061)"
+     class="cls-1"
+     points="243.81 256.01 243.81 258.35 248.81 255.34 243.81 252.34 243.81 254.68"
+     id="polyline366-1"
+     style="fill:#7889a8" />
+  <polygon
+     transform="matrix(-1,0,0,1,475.06,0.0100061)"
+     class="cls-1"
+     points="244.31,254.68 243.31,254.68 243.31,251.46 249.78,255.34 243.31,259.23 243.31,256.01 244.31,256.01 244.31,257.46 247.84,255.34 244.31,253.23 "
+     id="polygon368-4"
+     style="fill:#7889a8" />
 </svg>
