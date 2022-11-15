@@ -9,7 +9,7 @@ categories:
 description: 
   text: /text/wordpress-multiregion-standalone.md
   short: WordPress single instances in multi-region powered by LiteSpeed.
-logo: /images/logo/multiregion-standalone.svg
+logo: /images/logo/new-logo-multiregion-standalone.svg
 
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
 
@@ -66,7 +66,7 @@ settings:
     - caption: Topology
       type: displayfield
       name: topology
-      tooltip: "<h2 align=center>Multi-Region Standalone<br>Cluster</h2><img width='390' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/images/topo/multi-region-standalone.svg?sanitize=true'><br>" 
+      tooltip: "<h3>Multi-Region Standalone</h3><br><img width='375' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress/master/wordpress-edition/images/topo/multi-region-standalone.svg?sanitize=true'>" 
 
     - caption: Regions
       type: regionlist
