@@ -60,6 +60,7 @@ In the opened confirmation window, choose:
 
 * **[Premium CDN](https://www.virtuozzo.com/company/blog/enterprise-cdn-verizon-integration/)** integration in order to provide Lightning-fast static assets loading  
 
+* **[WordPress Multisite Network](https://www.virtuozzo.com/company/blog/wordpress-multisite-network/)**. WordPress application comes with a built-in Multisite feature for the cases when the massive WordPress installations are required running under the hood virtually unlimited quantity on WordPress sites using one hosting account. You can enable this functionality picking up the respective checkbox. As a result, your application will be acting as WordPress network hub, where the network can comprise a number of websites. You can create own independent network of websites and invite others to create their own sites on the network even for commercial usage.
 
 * destination **Regions**. 
 
