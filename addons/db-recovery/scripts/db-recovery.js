@@ -290,7 +290,7 @@ function parseOut(data, restorePrimary) {
             failedNodes = failedPrimary;
         }
 
-        api.marketplace.console.WriteLog("failedPrimary->"before if);
+        api.marketplace.console.WriteLog("failedPrimary-before if");
         if (isRestore && restorePrimary && failedPrimary.length) { //restoreAll
 
             resp = getNodeIdByIp({
