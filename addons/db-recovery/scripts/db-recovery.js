@@ -82,6 +82,7 @@ if (isRestore) {
             address: failedNodes[k].address,
             envName: failedNodes[k].envName || envName
         });
+        api.marketplace.console.WriteLog("resp getNodeIdByIp00->" + resp);
 
         if (resp.result != 0) return resp;
 
@@ -186,6 +187,8 @@ function parseOut(data, restorePrimary) {
                                     });
                                 }
                             }
+                            api.marketplace.console.WriteLog("failedPrimary->" + failedPrimary);
+                            api.marketplace.console.WriteLog("failedNodes->" + failedNodes);
 
                             if (item.service_status == DOWN && item.status == FAILED) {
                                 failedNodes.push({
@@ -291,6 +294,7 @@ function parseOut(data, restorePrimary) {
         }
 
         api.marketplace.console.WriteLog("failedPrimary-before if");
+        api.marketplace.console.WriteLog("restorePrimary" + restorePrimary);
         if (isRestore && restorePrimary && failedPrimary.length) { //restoreAll
 
             resp = getNodeIdByIp({
