@@ -172,7 +172,6 @@ function parseOut(data, restorePrimary) {
                                 donorIps[PRIMARY] = item.address;
                             }
 
-api.marketplace.console.WriteLog("item000->" + item);
                             if (item.status == FAILED) {
                                 if (item.node_type == PRIMARY) {
                                     failedPrimary.push({
@@ -186,9 +185,6 @@ api.marketplace.console.WriteLog("item000->" + item);
                                         scenario: scenario
                                     });
                                 }
-                                
-                                api.marketplace.console.WriteLog("failedPrimary->" + failedPrimary);
-                                api.marketplace.console.WriteLog("failedNodes->" + failedNodes);
                             }
 
                             if (item.service_status == DOWN && item.status == FAILED) {
@@ -294,14 +290,18 @@ api.marketplace.console.WriteLog("item000->" + item);
             failedNodes = failedPrimary;
         }
 
+        api.marketplace.console.WriteLog("failedPrimary->"before if);
         if (isRestore && restorePrimary && failedPrimary.length) { //restoreAll
 
             resp = getNodeIdByIp({
                 address: failedPrimary[0].address
             });
+            api.marketplace.console.WriteLog("resp->" + resp);
             if (resp.result != 0) return resp;
 
+            api.marketplace.console.WriteLog("resp.nodeid->" + resp.nodeid);
             resp = execRecovery(failedPrimary[0].scenario, donorIps[scheme], resp.nodeid);
+            api.marketplace.console.WriteLog("resp->" + resp);
             if (resp.result != 0) return resp;
             resp = parseOut(resp.responses);
             if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
