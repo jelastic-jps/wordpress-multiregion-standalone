@@ -78,6 +78,8 @@ if (isRestore) {
     }
 
     for (var k = 0, l = failedNodes.length; k < l; k++) {
+        api.marketplace.console.WriteLog("failedNodes[k]->" + failedNodes[k]);
+        api.marketplace.console.WriteLog("envName->" + envName);
         resp = getNodeIdByIp({
             address: failedNodes[k].address,
             envName: failedNodes[k].envName || envName
