@@ -172,6 +172,25 @@ function parseOut(data, restorePrimary) {
                                 donorIps[PRIMARY] = item.address;
                             }
 
+api.marketplace.console.WriteLog("item000->" + item);
+                            if (item.status == FAILED) {
+                                if (item.node_type == PRIMARY) {
+                                    failedPrimary.push({
+                                        address: item.address,
+                                        scenario: scenario
+                                    });
+                                    restoreMaster = true;
+                                } else {
+                                    failedNodes.push({
+                                        address: item.address,
+                                        scenario: scenario
+                                    });
+                                }
+                                
+                                api.marketplace.console.WriteLog("failedPrimary->" + failedPrimary);
+                                api.marketplace.console.WriteLog("failedNodes->" + failedNodes);
+                            }
+
                             if (item.service_status == DOWN && item.status == FAILED) {
                                 failedNodes.push({
                                     address: item.address,
