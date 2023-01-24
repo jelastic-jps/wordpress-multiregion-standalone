@@ -82,11 +82,21 @@ if (isRestore) {
         api.marketplace.console.WriteLog("envName->" + envName);
         resp = getNodeIdByIp({
             address: failedNodes[k].address,
-            envName: failedNodes[k].envName || envName
+            envName: failedNodes[k].envName || envName1
         });
         api.marketplace.console.WriteLog("resp getNodeIdByIp00->" + resp);
-
         if (resp.result != 0) return resp;
+        if (!resp.nodeid) {
+            resp = getNodeIdByIp({
+                address: failedNodes[k].address,
+                envName: envName2
+            });
+            if (resp.result != 0) return resp;
+            failedNodes[k].envName = envName2;
+        } else {
+            failedNodes[k].envName = envName1;
+        }
+        api.marketplace.console.WriteLog("resp getNodeIdByIp11->" + resp);
 
         resp = execRecovery({
             envName: failedNodes[k].envName || envName,
