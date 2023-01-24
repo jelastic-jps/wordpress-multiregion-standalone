@@ -80,10 +80,19 @@ if (isRestore) {
     for (var k = 0, l = failedNodes.length; k < l; k++) {
         resp = getNodeIdByIp({
             address: failedNodes[k].address,
-            envName: failedNodes[k].envName || envName
+            envName: failedNodes[k].envName || envName1
         });
-
         if (resp.result != 0) return resp;
+        if (!resp.nodeid) {
+            resp = getNodeIdByIp({
+                address: failedNodes[k].address,
+                envName: envName2
+            });
+            if (resp.result != 0) return resp;
+            failedNodes[k].envName = envName2;
+        } else {
+            failedNodes[k].envName = envName1;
+        }
 
         resp = execRecovery({
             envName: failedNodes[k].envName || envName,
@@ -170,6 +179,21 @@ function parseOut(data, restorePrimary) {
 
                             if (!donorIps[scheme] && item.service_status == UP) {
                                 donorIps[PRIMARY] = item.address;
+                            }
+
+                            if (item.status == FAILED) {
+                                if (item.node_type == PRIMARY) {
+                                    failedPrimary.push({
+                                        address: item.address,
+                                        scenario: scenario
+                                    });
+                                    restoreMaster = true;
+                                } else {
+                                    failedNodes.push({
+                                        address: item.address,
+                                        scenario: scenario
+                                    });
+                                }
                             }
 
                             if (item.service_status == DOWN && item.status == FAILED) {
@@ -284,6 +308,7 @@ function parseOut(data, restorePrimary) {
 
             resp = execRecovery(failedPrimary[0].scenario, donorIps[scheme], resp.nodeid);
             if (resp.result != 0) return resp;
+
             resp = parseOut(resp.responses);
             if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
             failedPrimary = [];
