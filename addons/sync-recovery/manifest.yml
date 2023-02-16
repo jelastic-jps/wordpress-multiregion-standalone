@@ -99,7 +99,7 @@ actions:
         [ -f ${globals.ssh_root}${globals.ssh-key}.pub ] && rm -f ${globals.ssh_root}${globals.ssh-key}.pub;
         sed -i '/sync_monitoring/d' ${globals.ssh_root}authorized_keys;
         ssh-keygen -t rsa -b 4098 -f ${globals.tmp}${globals.ssh-key} -q -N '' -C 'sync_monitoring' <<<y >/dev/null 2>&1
-        chown litespeed:litespeed ${globals.tmp}${globals.ssh-key}*
+        chown jelastic ${globals.tmp}${globals.ssh-key}*
       user: root
     - script: |
         var resp, key = "";
