@@ -6,7 +6,7 @@ description:
   short: The add-on performs a diagnostic of your content synchronization between environments.
 logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/sync-recovery
 
 targetNodes:
   nodeGroup: 
@@ -181,7 +181,7 @@ actions:
           if (k[i].nodeGroup == 'cp')
               k[i].ismaster ? secondary_ip = k[i].address : 0;
         }
-        var command = "curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagnostic " + secondary_ip;
+        var command = "curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagnostic " + secondary_ip;
         resp = api.env.control.ExecCmdByGroup('${globals.primaryEnvName}', session, 'cp', toJSON([{ "command": command }]), true, false, "root");
         if (resp.result != 0) return resp;
         data = JSON.parse(resp.responses[0].out);
