@@ -2,6 +2,7 @@ jpsType: update
 id: multiregions-content-synchronization-manager
 name: Multi-Regions Content Synchronization Manager
 description: Multi-Regions Content Synchronization Manager
+
 baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290
 
 globals:

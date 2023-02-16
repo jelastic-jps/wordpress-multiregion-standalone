@@ -1,0 +1,105 @@
+type: update
+name: Health Check Synchronization
+id: sync-healthcheck
+description:
+  text: Health Check Synchronization
+  short: Health Check Synchronization
+logo: https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/images/database-recovery.png
+
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218/addons/sync_check
+
+targetNodes:
+  nodeGroup: 
+    - cp
+
+mixins:
+  - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
+
+globals:
+  app_id: sync-healthcheck
+  nodeGroup: cp
+
+buttons:
+  - name: diagnostic
+    caption: Synchronization Diagnostic
+    confirmText: Run synchronization diagnostic?
+    loadingText: Diagnostic is in progress...
+    action: diagnostic
+    
+onInstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+    - if (globals.isSecondaryEnv):
+      - return:
+          type: success
+    - else:
+      - createFile:
+          envName: ${globals.secondaryEnvName}
+          nodeGroup: ${targetNodes.nodeGroup}
+          app_id: ${globals.app_id}
+      - installAddon:
+          envName: ${globals.secondaryEnvName}
+
+onUninstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+      - if (!globals.isOppositeExecuted):
+          - markExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+          - if (env.name == globals.primaryEnvName):
+              executeAction:
+                envName: ${globals.secondaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - else:
+              executeAction:
+                envName: ${globals.primaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - removeExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+      - if (globals.isSecondaryEnv):
+          script: |
+            return {result: 0}
+      - else:
+          removeExecutedEnvFile:
+            nodeGroup: ${globals.nodeGroup}
+            app_id: ${globals.app_id}
+            extension: lock
+
+responses:
+  200:
+    type: success
+    message: Synchronization is OK! No errors have been discovered.
+    
+  99:
+    type: success
+    message: |
+      Errors were discovered during the synchronization diagnostic.
+      Synchronization between clusters does not work.
+
+actions:
+  diagnostic:
+    - checkClustering:
+        nodeGroup: ${targetNodes.nodeGroup}
+        app_id: ${globals.app_id}
+    - script: /scripts/syncHealthCheck.js
+      exec: ' --diagnostic'
+      nodeGroup: ${targetNodes.nodeGroup}
+      multiregion: true
+      envName1: ${globals.primaryEnvName}
+      envName2: ${globals.secondaryEnvName}
+        
+  installAddon:
+    install: ${baseUrl}/manifest.yml
+    envName: ${this.envName}
+    nodeGroup: ${globals.nodeGroup}
+
