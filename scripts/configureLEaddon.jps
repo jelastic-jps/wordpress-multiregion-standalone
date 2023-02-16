@@ -42,7 +42,7 @@ actions:
       });
       
   installLEaddon:
-    install: https://github.com/lazarenkoalexey/lets-encrypt/blob/multi/manifest.jps?_r=${fn.random}
+    install: https://github.com/jelastic-jps/lets-encrypt/blob/master/manifest.jps?_r=${fn.random}
     nodeGroup: cp
     skipEmail: true
     settings:

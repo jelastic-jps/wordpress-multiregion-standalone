@@ -1,6 +1,6 @@
 type: install
 targetEditions: wordpress
-name: Multi-Region Standalone (BETA)
+name: Multi-Region WordPress Standalone (BETA)
 id: wordpress-multiregion-standalone
 categories:
   - apps/clusters
@@ -9,9 +9,9 @@ categories:
 description: 
   text: /text/wordpress-multiregion-standalone.md
   short: WordPress single instances in multi-region powered by LiteSpeed.
-logo: /images/logo/multiregion-standalone.svg
+logo: /images/logo/new-logo-multiregion-standalone.svg
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290
 
 onBeforeInit: https://github.com/jelastic-jps/wordpress/raw/master/wordpress-edition/scripts/onBeforeInit.js
 
@@ -26,19 +26,42 @@ settings:
       name: displayfield
       markup:
  
-    - caption: WordPress Brute Force Attack Protection
+    - caption: Install LiteSpeed High-Performance Web Server
       type: checkbox
-      name: wp_protect
+      name: ls-addon
       value: true
       disabled: false
-      tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>."
+      tooltip: "If this option is disabled, the cluster will be installed using NGINX load balancer and application servers"
+      showIf:
+        true:
+          - caption: WordPress Brute Force Attack Protection
+            type: checkbox
+            name: wp_protect
+            value: true
+            disabled: false
+            tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>"
 
-    - caption: Web Application Firewall
-      type: checkbox
-      name: waf
-      value: true
-      disabled: false
-      tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo."
+          - caption: Web Application Firewall
+            type: checkbox
+            name: waf
+            value: true
+            disabled: false
+            tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo"
+
+        false:
+          - caption: WordPress Brute Force Attack Protection
+            type: checkbox
+            name: wp_protect
+            value: false
+            disabled: true
+            tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>"
+        
+          - caption: Web Application Firewall
+            type: checkbox
+            name: waf
+            value: false
+            disabled: true
+            tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo"
 
     - caption: Install Let's Encrypt SSL with Auto-Renewal
       type: checkbox
@@ -66,7 +89,7 @@ settings:
     - caption: Topology
       type: displayfield
       name: topology
-      tooltip: "<h2 align=center>Multi-Region Standalone<br>Cluster</h2><img width='390' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/images/topo/multi-region-standalone.svg?sanitize=true'><br>" 
+      tooltip: "<h3>Multi-Region Standalone</h3><br><img width='375' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress/master/wordpress-edition/images/topo/multi-region-standalone.svg?sanitize=true'>" 
 
     - caption: Regions
       type: regionlist
@@ -150,7 +173,7 @@ actions:
             displayName: "${globals.displayName-" + cluster + "}",
             region: "${globals.region-" + cluster + "}",
             settings: {
-              "ls-addon": "true",
+              "ls-addon": "${settings.ls-addon}",
               "waf": "${settings.waf}",
               "wp_protect": "${settings.wp_protect}",
               "le-addon": "false",
