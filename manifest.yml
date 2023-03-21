@@ -118,6 +118,7 @@ globals:
   protocol: http
   wp_admin_pass: ${fn.password(10)}
   success: default
+  stack: LEMP
 
 onInstall:
   - initGlobals
@@ -131,6 +132,9 @@ onInstall:
   - installReplications
   - installWordpress
   - if (${settings.cdn-addon:false}): installCDNaddon
+  - if (${settings.le-addon:false}):
+      setGlobals:
+        stack: LLSMP
   
 actions:
 
@@ -268,7 +272,7 @@ actions:
           protocol: https
 
 success:
-  email: /success/email/${nodes.cp.nodeType}/success-${globals.success}.md?_r=${fn.random}
-  text: /success/text/${nodes.cp.nodeType}/success-${globals.success}.md?_r=${fn.random}
+  email: /success/email/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
+  text: /success/text/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
 
 startPage: ${globals.protocol}://${globals.domain}/
