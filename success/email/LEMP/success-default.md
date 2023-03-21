@@ -9,13 +9,6 @@ Use the following credentials to access the admin panel:
 **Login**: ${user.email}  
 **Password**: ${globals.wp_admin_pass}  
 
-Manage the LiteSpeed WEB nodes using the next credentials:
-
-**Admin Console 1**: [https://${settings.envName}-1.${globals.domain-1}:4848](https://${settings.envName}-1.${globals.domain-1}:4848)   
-**Admin Console 2**: [https://${settings.envName}-2.${globals.domain-2}:4848](https://${settings.envName}-2.${globals.domain-2}:4848)   
-**Username**: admin    
-**Password**: ${globals.db_pass}  
-
 Manage the database nodes using the next credentials:
 
 **phpMyAdmin Panel 1**: [https://${settings.envName}-1.${globals.domain-1}:8443](https://${settings.envName}-1.${globals.domain-1}:8443)   
