@@ -74,7 +74,6 @@ actions:
               nodeGroup: "cp",
               commandList: [
                 {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
-                {"command": "wp litespeed-purge all --path=/var/www/webroot/ROOT/;"},
                 {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
               ]
           });
