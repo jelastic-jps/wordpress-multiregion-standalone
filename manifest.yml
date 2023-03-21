@@ -268,7 +268,7 @@ actions:
           protocol: https
 
 success:
-  email: /success/email/success-${globals.success}.md?_r=${fn.random}
-  text: /success/text/success-${globals.success}.md?_r=${fn.random}
+  email: /success/email/${nodes.cp.nodeType}/success-${globals.success}.md?_r=${fn.random}
+  text: /success/text/${nodes.cp.nodeType}/success-${globals.success}.md?_r=${fn.random}
 
 startPage: ${globals.protocol}://${globals.domain}/
