@@ -48,3 +48,4 @@ actions:
     settings:
       customDomains: ${settings.domain}
       fallbackToX1: true
+      withExtIp: ${settings.withExtIp}
