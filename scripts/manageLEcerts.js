@@ -1,9 +1,12 @@
 //@req(envName, nodeGroup, nodeId)
 
-var resp,
+var SLB = "SLB",
+    resp,
     cert_key = readFile("/tmp/privkey.url"),
     cert     = readFile("/tmp/cert.url"),
     chain    = readFile("/tmp/fullchain.url"),
+    withExtIp = getParam("withExtIp", true),
+    customDomains = getParam("customDomains", ""),
     secondEnvName;
 
 secondEnvName = envName.slice(0, -1) + (envName.slice(-1) == 1 ? '2' : '1');
@@ -37,13 +40,35 @@ function readFile(path) {
 };
 
 function bindSSL(name) {
-    return api.env.binder.BindSSL({
-        "envName": name || envName,
-        "session": session,
-        "cert_key": cert_key.body,
-        "cert": cert.body,
-        "intermediate": chain.body
-    })
+    if (withExtIp) { 
+        return api.env.binder.BindSSL({
+            "envName": name || envName,
+            "session": session,
+            "cert_key": cert_key.body,
+            "cert": cert.body,
+            "intermediate": chain.body
+        });
+    } else {
+        resp = api.env.binder.AddSSLCert({
+            envName: envName,
+            session: session,
+            key: cert_key.body,
+            cert: cert.body,
+            interm: chain.body
+        });
+        if (resp.result != 0) return resp;
+        
+        resp = api.env.binder.GetSSLCerts(envName, session);
+        if (resp.result != 0) return resp;
+
+        return api.env.binder.BindSSLCert({
+            envName: envName,
+            session: session,
+            certId: resp.responses[resp.responses.length - 1].id,
+            entryPoint: SLB,
+            extDomains: customDomains.replace(/\s+/g, ', ').replace(/ /g, "")
+        });
+    }
 };
 
 function isExtIpsExist(name) {
