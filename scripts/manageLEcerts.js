@@ -66,13 +66,15 @@ function bindSSL(name) {
         api.marketplace.console.WriteLog("in else-> " + resp);
         if (resp.result != 0) return resp;
 
-        return api.env.binder.BindSSLCert({
+        resp = api.env.binder.BindSSLCert({
             envName: envName,
             session: session,
             certId: resp.responses[resp.responses.length - 1].id,
             entryPoint: SLB,
             extDomains: customDomains.replace(/\s+/g, ', ').replace(/ /g, "")
         });
+        api.marketplace.console.WriteLog("in else000-> " + resp);
+        return resp;
     }
 };
 
