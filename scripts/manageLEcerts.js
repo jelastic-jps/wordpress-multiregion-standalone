@@ -19,7 +19,9 @@ if (cert_key.body && chain.body && cert.body) {
         resp = isExtIpsExist(secondEnvName);
         if (resp.result != 0) return resp;
 
-        if (!resp.exist) {
+        api.marketplace.console.WriteLog("second->");
+        if (!resp.exist && withExtIp == "true") {
+            api.marketplace.console.WriteLog("second2->");
             resp = api.env.binder.SetExtIpCount(secondEnvName, session, "ipv4", 1, nodeGroup);
             if (resp.result != 0) return resp;
         }
@@ -40,8 +42,6 @@ function readFile(path) {
 };
 
 function bindSSL(name) {
-    api.marketplace.console.WriteLog("withExtIp-> " + withExtIp);
-    api.marketplace.console.WriteLog("withExtIp0-> " + (withExtIp == "true"));
     if (withExtIp == "true") { 
         return api.env.binder.BindSSL({
             "envName": name || envName,
@@ -51,7 +51,6 @@ function bindSSL(name) {
             "intermediate": chain.body
         });
     } else {
-        api.marketplace.console.WriteLog("in else-> ");
         resp = api.env.binder.AddSSLCert({
             envName: envName,
             session: session,
@@ -59,22 +58,18 @@ function bindSSL(name) {
             cert: cert.body,
             interm: chain.body
         });
-        api.marketplace.console.WriteLog("in else-> " + resp);
         if (resp.result != 0) return resp;
         
         resp = api.env.binder.GetSSLCerts(envName, session);
-        api.marketplace.console.WriteLog("in else-> " + resp);
         if (resp.result != 0) return resp;
 
-        resp = api.env.binder.BindSSLCert({
+        return api.env.binder.BindSSLCert({
             envName: envName,
             session: session,
             certId: resp.responses[resp.responses.length - 1].id,
             entryPoint: SLB,
             extDomains: customDomains.replace(/\s+/g, ', ').replace(/ /g, "")
         });
-        api.marketplace.console.WriteLog("in else000-> " + resp);
-        return resp;
     }
 };
 
