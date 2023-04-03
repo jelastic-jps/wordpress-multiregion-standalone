@@ -41,7 +41,8 @@ function readFile(path) {
 
 function bindSSL(name) {
     api.marketplace.console.WriteLog("withExtIp-> " + withExtIp);
-    if (withExtIp) { 
+    api.marketplace.console.WriteLog("withExtIp0-> " + (withExtIp == "true"));
+    if (withExtIp == "true") { 
         return api.env.binder.BindSSL({
             "envName": name || envName,
             "session": session,
