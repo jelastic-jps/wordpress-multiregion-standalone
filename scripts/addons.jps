@@ -3,6 +3,8 @@ id: wp-single-multiregions-addons
 name: WordPress Simple Multiregions Addons
 description: WordPress Simple Multiregions Addons
 
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290
+
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
@@ -19,6 +21,7 @@ addons:
     type: update
     name: WordPress Base URL
     description: WordPress Base URL Configuration.
+    logo: /images/logo/multiregion-standalone.svg
     settings:
       fields:
         - type: string
@@ -41,6 +44,7 @@ addons:
     type: update
     name: Cache Manager
     description: Clean all caches.
+    logo: /images/logo/multiregion-standalone.svg
     buttons:
       - caption: Clean all caches
         action: cachePurge
