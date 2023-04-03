@@ -40,6 +40,7 @@ function readFile(path) {
 };
 
 function bindSSL(name) {
+    api.marketplace.console.WriteLog("withExtIp-> " + withExtIp);
     if (withExtIp) { 
         return api.env.binder.BindSSL({
             "envName": name || envName,
@@ -49,6 +50,7 @@ function bindSSL(name) {
             "intermediate": chain.body
         });
     } else {
+        api.marketplace.console.WriteLog("in else-> ");
         resp = api.env.binder.AddSSLCert({
             envName: envName,
             session: session,
@@ -56,9 +58,11 @@ function bindSSL(name) {
             cert: cert.body,
             interm: chain.body
         });
+        api.marketplace.console.WriteLog("in else-> " + resp);
         if (resp.result != 0) return resp;
         
         resp = api.env.binder.GetSSLCerts(envName, session);
+        api.marketplace.console.WriteLog("in else-> " + resp);
         if (resp.result != 0) return resp;
 
         return api.env.binder.BindSSLCert({
