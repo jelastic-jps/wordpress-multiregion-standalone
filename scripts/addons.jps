@@ -70,17 +70,31 @@ actions:
     - setGlobals:
         clusterEnvs: ${response.items.join(,)} 
     - script: |
-        var envs = '${response.items.join(,)}'.split(','), api = [];
+        var envs = '${response.items.join(,)}'.split(','), api = [], resp;
         for (var i = 0, n = envs.length; i < n; i ++) {
-          api.push({
-            method: "env.control.ExecCmdByGroup",
-              envName: envs[i],
-              nodeGroup: "cp",
-              commandList: [
-                {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
-                {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
-              ]
-          });
+          resp = jelastic.env.control.GetEnvInfo(envs[i], session);
+          if (resp.result != 0) return resp;
+          if (resp.nodes[0].nodeType == 'llsmp') {
+            api.push({
+              method: "env.control.ExecCmdByGroup",
+                envName: envs[i],
+                nodeGroup: "cp",
+                commandList: [
+                  {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
+                  {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
+                ]
+            });
+          } else {
+            api.push({
+              method: "env.control.ExecCmdByGroup",
+                envName: envs[i],
+                nodeGroup: "cp",
+                commandList: [
+                  {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
+                  {"command": "rm -rf /var/www/webroot/ROOT/.cache/*;"},
+                ]
+            });
+          }
         }
         return { result: 0, onAfterReturn: { api: api, async: true } }
 
