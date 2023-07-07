@@ -12,10 +12,7 @@ let hasCollaboration = (parseInt('${fn.compareEngine(7.0)}', 10) >= 0);
 let extIP = "environment.externalip.enabled";
 let extIPperEnv = "environment.externalip.maxcount";
 let extIPperNode = "environment.externalip.maxcount.per.node";
-let extIP6 = "environment.externalipv6.enabled";
-let extIP6perEnv = "environment.externalipv6.maxcount";
-let extIP6perNode = "environment.externalipv6.maxcount.per.node";
-let quotas, quotasIP6, markup = "", count = 0, ext_ip, height;
+let quotas, markup = "", count = 0, ext_ip, height;
 
 function defineAppFields(appid, name) {
     resp = jelastic.dev.apps.GetApp(appid);
@@ -77,46 +74,11 @@ for (let i = 0, n = quotas.length; i < n; i++) {
 }
 
 if (quotas[0].value == 0 || quotas[1].value == 0 || quotas[2].value == 0) {
-    if (hasCollaboration) {
-        quotasIP6 = [
-            { quota : { name: extIP6 }, value: parseInt('${quota.environment.externalipv6.enabled}', 10) },
-            { quota : { name: extIP6perEnv }, value: parseInt('${quota.environment.externalipv6.maxcount}', 10) },
-            { quota : { name: extIP6perNode }, value: parseInt('${quota.environment.externalipv6.maxcount.per.node}', 10) }
-        ];
-    } else {
-        resp = jelastic.billing.account.GetQuotas(extIP6 + ";"+extIP6perEnv+";" + extIP6perNode );
-        if (resp.result != 0) return resp;
-        quotasIP6 = resp.array;
-    }
+    fields[LE].hidden = true;
+    fields[LE].value = false;
+    height = (count > 3) ? 60 : 30;
 
-    for (let i = 0, n = quotasIP6.length; i < n; i++) {
-        let q = quotasIP6[i], name = toNative(q.quota.name);
-        if (name == extIP6 && !q.value) {
-            count += 1;
-            ext_ip = false;
-            err(q, false);
-        }
-
-        if (name == extIP6perEnv && q.value < 1) {
-            count += 1;
-            ext_ip = false;
-            err(q, false);
-        }
-
-        if (name == extIP6perNode && q.value < 1) {
-            count += 1;
-            ext_ip = false;
-            err(q, false);
-        }
-    }
-
-    if (quotasIP6[0].value == 0 || quotasIP6[1].value == 0 || quotasIP6[2].value == 0) {
-        fields[LE].hidden = true;
-        fields[LE].value = false;
-        height = (count > 3) ? 60 : 30;
-
-        jps.settings.fields.push({"type": "displayfield", "cls": "warning", "height": height, "hideLabel": true, "markup": "Using of public IP's is not possible because of such quota's values: " + markup});
-    }
+    jps.settings.fields.push({"type": "displayfield", "cls": "warning", "height": height, "hideLabel": true, "markup": "Using of Let's Encrypt add-on with public IP's is not possible because of such quota's values: " + markup});
 }
 
 resp = api.environment.control.GetEnvs();
