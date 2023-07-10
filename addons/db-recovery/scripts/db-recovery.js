@@ -281,6 +281,7 @@ function DBRecovery() {
                     }
                 }
 
+                log("item.result->" + item.result);
                 if (item.result == 0) {
                     switch (String(me.getScheme())) {
                         case GALERA:
@@ -289,6 +290,7 @@ function DBRecovery() {
                             break;
 
                         case PRIMARY:
+                            log("primary->");
                             resp = me.checkPrimary(item);
                             if (resp.result != 0) return resp;
                             break;
@@ -356,6 +358,7 @@ function DBRecovery() {
 
         if (item.service_status == DOWN || item.status == FAILED) {
 
+            log("in if->");
             if (item.service_status == UP) {
                 if (!me.getDonorIp()) {
                     me.setDonorIp(item.address);
@@ -367,7 +370,9 @@ function DBRecovery() {
             }
 
             if (!isRestore) {
+                log("before setFailedDisplayNode->");
                 resp = nodeManager.setFailedDisplayNode(item.address);
+                log("setFailedDisplayNode resp->" + resp);
                 if (resp.result != 0) return resp;
                 if (!resp.nodeid) {
                     let envNames = me.getEnvNames();
