@@ -617,7 +617,7 @@ function DBRecovery() {
                 let envName1 = getParam('envName1', '');
                 let envName2 = getParam('envName2', '');
                 let resp = me.getNodeIdByIp({
-                    envName: values.envName == envName1 ? envName2 : envName1;
+                    envName: values.envName == envName1 ? envName2 : envName1
                 });
                 log("getNodeIdByIp2 resp->" + resp);
                 if (resp.result != 0) return resp;
