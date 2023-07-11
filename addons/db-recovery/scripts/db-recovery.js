@@ -371,6 +371,7 @@ function DBRecovery() {
 
             if (!isRestore) {
                 log("before setFailedDisplayNode->");
+                log("item.address->" + item.address);
                 resp = nodeManager.setFailedDisplayNode(item.address);
                 log("setFailedDisplayNode resp->" + resp);
                 if (resp.result != 0) return resp;
@@ -650,9 +651,11 @@ function DBRecovery() {
             resp = me.getNodeIdByIp({
                 address: address
             });
+            log("getNodeIdByIp resp->" + resp);
             if (resp.result != 0 || !resp.nodeid) return resp;
 
             resp = me.getNodeInfoById(resp.nodeid);
+            log("getNodeInfoById resp->" + resp);
             if (resp.result != 0) return resp;
             node = resp.node;
 
@@ -661,6 +664,7 @@ function DBRecovery() {
             if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
 
             displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
+            log("displayName->" + displayName);
             return api.env.control.SetNodeDisplayName(envName, session, node.id, displayName);
         };
 
