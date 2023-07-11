@@ -592,7 +592,7 @@ function DBRecovery() {
             }
         };
 
-        me.getNodeIdByIp= function(values) {
+        me.getNodeIdByIp = function(values) {
             var envInfo,
                 nodes,
                 id = "";
@@ -612,6 +612,18 @@ function DBRecovery() {
                     break;
                 }
             }
+
+            if (!id) {
+                let envName1 = getParam('envName1', '');
+                let envName2 = getParam('envName2', '');
+                let resp = me.getNodeIdByIp({
+                    envName: values.envName == envName1 ? envName2 : envName1;
+                });
+                log("getNodeIdByIp2 resp->" + resp);
+                if (resp.result != 0) return resp;
+                if (resp.nodeid) id = resp.nodeid;
+            }
+            log("getNodeIdByIp id->" + id);
 
             return {
                 result: 0,
