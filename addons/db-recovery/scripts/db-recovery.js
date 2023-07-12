@@ -613,7 +613,7 @@ function DBRecovery() {
                 }
             }
 
-            if (!id) {
+            if (!id && getParam('multiregion', false)) {
                 let envName1 = getParam('envName1', '');
                 let envName2 = getParam('envName2', '');
                 let resp = me.getNodeIdByIp({
