@@ -696,7 +696,7 @@ function DBRecovery() {
 
             resp = me.getNodeInfoById({
                 envName: currentEnvName,
-                nodeid: resp.nodeid
+                id: resp.nodeid
             });
             log("getNodeInfoById resp->" + resp);
             if (resp.result != 0) return resp;
