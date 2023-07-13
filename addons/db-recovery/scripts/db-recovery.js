@@ -475,6 +475,7 @@ function DBRecovery() {
                     address: failedNodes[i].address,
                     envName: failedNodes[i].envName
                 });
+                log("getNodeIdByIp resp->" + resp);
                 if (resp.result != 0) return resp;
 
                 resp = me.execRecovery({
