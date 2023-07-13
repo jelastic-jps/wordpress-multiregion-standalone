@@ -678,9 +678,10 @@ function DBRecovery() {
             log("setFailedDisplayNode removeLabelFailed12->" + removeLabelFailed);
             resp = me.getNodeIdByIp({
                 envName: currentEnvName,
-                address: address
+                address: address,
+                reset: true
             });
-            log("setFailedDisplayNode getNodeIdByIp resp->" + resp);
+            log("setFailedDisplayNode getNodeIdByIp true resp->" + resp);
 
             if (resp.result == 0 && multiregion && !resp.nodeid) {
                 log("in if (multiregion && !resp.nodeid) {->");
