@@ -361,7 +361,6 @@ function DBRecovery() {
 
         if (item.service_status == DOWN || item.status == FAILED) {
 
-            log("in if->");
             if (item.service_status == UP) {
                 if (!me.getDonorIp()) {
                     me.setDonorIp(item.address);
@@ -410,7 +409,6 @@ function DBRecovery() {
             }
 
             resp = nodeManager.setFailedDisplayNode(item.address, true);
-            log("in checkPrimary setFailedDisplayNode resp->" + resp);
             if (resp.result != 0) return resp;
         }
         log("me.getDonorIp()->" + me.getDonorIp());
@@ -495,7 +493,7 @@ function DBRecovery() {
     };
 
     me.execRecovery = function(values) {
-        log("values->" + values);
+        log("execRecovery values->" + values);
         values = values || {};
         api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values));
         return nodeManager.cmd({
