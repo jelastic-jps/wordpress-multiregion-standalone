@@ -595,7 +595,8 @@ function DBRecovery() {
         me.getNodeIdByIp = function(values) {
             var envInfo,
                 nodes,
-                id = "";
+                id = "",
+                multiregion = getParam('multiregion', false);
 
             envInfo = me.getEnvInfo({
                 envName : values.envName
@@ -613,11 +614,13 @@ function DBRecovery() {
                 }
             }
 
-            if (!id && getParam('multiregion', false)) {
+            log("getNodeIdByIp2 values->" + values);
+            if (!id && multiregion && !values.secondEnv) {
                 let envName1 = getParam('envName1', '');
                 let envName2 = getParam('envName2', '');
                 let resp = me.getNodeIdByIp({
-                    envName: values.envName == envName1 ? envName2 : envName1
+                    envName: values.envName == envName1 ? envName2 : envName1,
+                    secondEnv: true
                 });
                 log("getNodeIdByIp2 resp->" + resp);
                 if (resp.result != 0) return resp;
