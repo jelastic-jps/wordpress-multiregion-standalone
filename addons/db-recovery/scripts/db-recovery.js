@@ -23,6 +23,8 @@ function DBRecovery() {
         config = {},
         nodeManager;
 
+    let multiregion = getParam('multiregion', false);
+
     nodeManager = new nodeManager();
 
     me.process = function() {
@@ -670,6 +672,19 @@ function DBRecovery() {
             resp = me.getNodeIdByIp({
                 address: address
             });
+            
+            if (multiregion && !resp.nodeid) {
+                log("in if (multiregion && !resp.nodeid) {->");
+                let envName1 = getParam('envName1', '');
+                let envName2 = getParam('envName2', '');
+                
+                resp = me.getNodeIdByIp({
+                    address: address,
+                    envName: envName == envName1 ? envName2 : envName1
+                });
+                log("resp second getNodeIdByIp->" + resp);
+            }
+            
             if (resp.result != 0 || !resp.nodeid) return resp;
 
             resp = me.getNodeInfoById(resp.nodeid);
