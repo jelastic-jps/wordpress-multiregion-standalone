@@ -555,6 +555,8 @@ function DBRecovery() {
             envInfo;
 
         me.getEnvInfo = function(values) {
+            values = values || {};
+            
             if (!envInfo || values.reset) {
                 envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
             }
