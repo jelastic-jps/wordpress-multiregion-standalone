@@ -120,8 +120,8 @@ function DBRecovery() {
         if (multiregion) {
             me.setScheme(PRIMARY);
             resp = me.processMultiRegion();
-            // if (resp.result != 0) return resp;
-            me.setEvent(true);
+            if (resp.result != 0) return resp;
+            // me.setEvent(true);
         } else {
             resp = me.defineScheme();
             if (resp.result != 0) return resp;
