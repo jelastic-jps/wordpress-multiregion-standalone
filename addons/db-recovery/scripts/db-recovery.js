@@ -372,6 +372,8 @@ function DBRecovery() {
                 }
             }
 
+            log("me.getDonorIp()->" + me.getDonorIp());
+
             log("before setFailedDisplayNode00->");
             if (!isRestore) {
                 log("before setFailedDisplayNode->");
@@ -414,6 +416,7 @@ function DBRecovery() {
             resp = nodeManager.setFailedDisplayNode(item.address, true);
             if (resp.result != 0) return resp;
         }
+        log("me.getDonorIp()->" + me.getDonorIp());
 
         return {
             result: 0
