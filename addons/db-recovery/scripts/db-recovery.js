@@ -556,7 +556,7 @@ function DBRecovery() {
 
         me.getEnvInfo = function(values) {
             values = values || {};
-            
+
             if (!envInfo || values.reset) {
                 envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
             }
@@ -665,6 +665,7 @@ function DBRecovery() {
 
         me.setFailedDisplayNode = function(address, removeLabelFailed) {
             var REGEXP = new RegExp('\\b - ' + FAILED + '\\b', 'gi'),
+                currentEnvName = envName,
                 displayName,
                 resp,
                 node;
@@ -681,12 +682,14 @@ function DBRecovery() {
                 let envName1 = getParam('envName1', '');
                 let envName2 = getParam('envName2', '');
 
+                currentEnvName = envName == envName1 ? envName2 : envName1;
+
                 resp = me.getNodeIdByIp({
-                    envName: envName == envName1 ? envName2 : envName1,
+                    envName: currentEnvName,
                     address: address,
                     reset: true
                 });
-                log("resp second getNodeIdByIp->" + resp);
+                log("resp second currentEnvName getNodeIdByIp->" + resp);
             }
 
             if (resp.result != 0 || !resp.nodeid) return resp;
@@ -702,7 +705,7 @@ function DBRecovery() {
 
             displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
             log("displayName->" + displayName);
-            return api.env.control.SetNodeDisplayName(envName, session, node.id, displayName);
+            return api.env.control.SetNodeDisplayName(currentEnvName, session, node.id, displayName);
         };
 
         me.cmd = function(values) {
