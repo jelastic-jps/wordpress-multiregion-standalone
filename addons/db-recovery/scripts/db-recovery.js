@@ -610,7 +610,9 @@ function DBRecovery() {
 
             nodes = envInfo.nodes;
 
+            log("getNodeIdByIp2 nodes->" + nodes);
             for (var i = 0, n = nodes.length; i < n; i++) {
+                log("nodes[i].address->" + nodes[i].address);
                 if (nodes[i].address == values.address) {
                     id = nodes[i].id;
                     break;
@@ -672,19 +674,19 @@ function DBRecovery() {
             resp = me.getNodeIdByIp({
                 address: address
             });
-            
-            if (multiregion && !resp.nodeid) {
+
+            if (resp.result == 0 && multiregion && !resp.nodeid) {
                 log("in if (multiregion && !resp.nodeid) {->");
                 let envName1 = getParam('envName1', '');
                 let envName2 = getParam('envName2', '');
-                
+
                 resp = me.getNodeIdByIp({
                     address: address,
                     envName: envName == envName1 ? envName2 : envName1
                 });
                 log("resp second getNodeIdByIp->" + resp);
             }
-            
+
             if (resp.result != 0 || !resp.nodeid) return resp;
 
             resp = me.getNodeInfoById(resp.nodeid);
