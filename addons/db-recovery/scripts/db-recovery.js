@@ -632,17 +632,19 @@ function DBRecovery() {
             }
         };
 
-        me.getNodeInfoById = function(values) {            
+        me.getNodeInfoById = function(values) {
             var envInfo,
                 nodes,
                 node;
 
             values = values || {};
+            log("getNodeInfoById values->" + values);
 
             envInfo = me.getEnvInfo({
                 envName: values.envName || "",
                 reset: true
             });
+            log("getNodeInfoById envInfo->" + envInfo);
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
