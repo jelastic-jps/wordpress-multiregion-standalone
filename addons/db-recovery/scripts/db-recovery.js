@@ -473,9 +473,10 @@ function DBRecovery() {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
                 let resp = nodeManager.getNodeIdByIp({
                     address: failedNodes[i].address,
-                    envName: failedNodes[i].envName
+                    envName: failedNodes[i].envName,
+                    reset: true
                 });
-                log("getNodeIdByIp resp->" + resp);
+                log("getNodeIdByIp00 resp->" + resp);
                 if (resp.result != 0) return resp;
 
                 resp = me.execRecovery({
