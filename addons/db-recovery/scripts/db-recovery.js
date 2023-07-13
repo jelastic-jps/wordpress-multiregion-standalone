@@ -644,7 +644,6 @@ function DBRecovery() {
                 envName: values.envName || "",
                 reset: true
             });
-            log("getNodeInfoById envInfo->" + envInfo);
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
@@ -704,8 +703,8 @@ function DBRecovery() {
 
             node.displayName = node.displayName || ("Node ID: " + node.id);
 
-            log("isRestore->" + isRestore);
-            if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
+            log("isRestore22->" + isRestore);
+            // if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
 
             displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
             log("displayName->" + displayName);
