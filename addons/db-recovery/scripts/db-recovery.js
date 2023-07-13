@@ -632,18 +632,23 @@ function DBRecovery() {
             }
         };
 
-        me.getNodeInfoById = function(id) {
+        me.getNodeInfoById = function(values) {            
             var envInfo,
                 nodes,
                 node;
 
-            envInfo = me.getEnvInfo();
+            values = values || {};
+
+            envInfo = me.getEnvInfo({
+                envName: values.envName || "",
+                reset: true
+            });
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
 
             for (var i = 0, n = nodes.length; i < n; i++) {
-                if (nodes[i].id == id) {
+                if (nodes[i].id == values.id) {
                     node = nodes[i];
                     break;
                 }
@@ -687,7 +692,10 @@ function DBRecovery() {
 
             if (resp.result != 0 || !resp.nodeid) return resp;
 
-            resp = me.getNodeInfoById(resp.nodeid);
+            resp = me.getNodeInfoById({
+                envName: currentEnvName,
+                nodeid: resp.nodeid
+            });
             log("getNodeInfoById resp->" + resp);
             if (resp.result != 0) return resp;
             node = resp.node;
