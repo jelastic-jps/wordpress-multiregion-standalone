@@ -619,6 +619,8 @@ function DBRecovery() {
                 envName : values.envName || envName,
                 reset: values.reset || false
             });
+            log("getNodeIdByIp getNodeIdByIp00 values->" + values);
+            log("getNodeIdByIp getNodeIdByIp00 envInfo->" + envInfo);
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
