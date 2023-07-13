@@ -612,7 +612,7 @@ function DBRecovery() {
                 id = "";
 
             envInfo = me.getEnvInfo({
-                envName : values.envName,
+                envName : values.envName || envName,
                 reset: values.reset || false
             });
             if (envInfo.result != 0) return envInfo;
@@ -671,7 +671,7 @@ function DBRecovery() {
             removeLabelFailed = !!removeLabelFailed;
 
             log("setFailedDisplayNode address->" + address);
-            log("setFailedDisplayNode removeLabelFailed->" + removeLabelFailed);
+            log("setFailedDisplayNode removeLabelFailed12->" + removeLabelFailed);
             resp = me.getNodeIdByIp({
                 address: address
             });
