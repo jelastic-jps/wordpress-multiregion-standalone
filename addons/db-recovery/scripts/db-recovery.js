@@ -610,6 +610,8 @@ function DBRecovery() {
                 nodes,
                 id = "";
 
+            values = values || {};
+
             envInfo = me.getEnvInfo({
                 envName : values.envName || envName,
                 reset: values.reset || false
@@ -672,8 +674,10 @@ function DBRecovery() {
             log("setFailedDisplayNode address->" + address);
             log("setFailedDisplayNode removeLabelFailed12->" + removeLabelFailed);
             resp = me.getNodeIdByIp({
+                envName: currentEnvName,
                 address: address
             });
+            log("setFailedDisplayNode getNodeIdByIp resp->" + resp);
 
             if (resp.result == 0 && multiregion && !resp.nodeid) {
                 log("in if (multiregion && !resp.nodeid) {->");
@@ -696,7 +700,6 @@ function DBRecovery() {
                 envName: currentEnvName,
                 id: resp.nodeid
             });
-            log("getNodeInfoById resp->" + resp);
             if (resp.result != 0) return resp;
             node = resp.node;
 
