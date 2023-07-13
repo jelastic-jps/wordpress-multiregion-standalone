@@ -467,6 +467,7 @@ function DBRecovery() {
 
     me.recoveryNodes = function recoveryNodes(nodes) {
         let failedNodes = nodes || me.getFailedNodes();
+        log("failedNodes->" + failedNodes);
 
         if (failedNodes.length) {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
@@ -603,13 +604,11 @@ function DBRecovery() {
             envInfo = me.getEnvInfo({
                 envName : values.envName
             });
-            log("getNodeIdByIp envInfo->" + envInfo);
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
 
             for (var i = 0, n = nodes.length; i < n; i++) {
-                log("getNodeIdByIp nodes[i].address->" + nodes[i].address);
                 if (nodes[i].address == values.address) {
                     id = nodes[i].id;
                     break;
@@ -671,7 +670,6 @@ function DBRecovery() {
             resp = me.getNodeIdByIp({
                 address: address
             });
-            log("getNodeIdByIp resp->" + resp);
             if (resp.result != 0 || !resp.nodeid) return resp;
 
             resp = me.getNodeInfoById(resp.nodeid);
