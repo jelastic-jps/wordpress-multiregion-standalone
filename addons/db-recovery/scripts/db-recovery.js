@@ -555,9 +555,7 @@ function DBRecovery() {
             envInfo;
 
         me.getEnvInfo = function(values) {
-            var resp;
-
-            if (!envInfo && !values.reset) {
+            if (!envInfo || values.reset) {
                 envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
             }
 
@@ -611,7 +609,7 @@ function DBRecovery() {
 
             nodes = envInfo.nodes;
 
-            log("getNodeIdByIp2 nodes->" + nodes);
+            log("getNodeIdByIp222 nodes->" + nodes);
             for (var i = 0, n = nodes.length; i < n; i++) {
                 log("nodes[i].address->" + nodes[i].address);
                 if (nodes[i].address == values.address) {
