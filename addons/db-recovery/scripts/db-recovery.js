@@ -120,7 +120,8 @@ function DBRecovery() {
         if (multiregion) {
             me.setScheme(PRIMARY);
             resp = me.processMultiRegion();
-            if (resp.result != 0) return resp;
+            // if (resp.result != 0) return resp;
+            me.setEvent(true);
         } else {
             resp = me.defineScheme();
             if (resp.result != 0) return resp;
@@ -369,6 +370,7 @@ function DBRecovery() {
                 }
             }
 
+            log("before setFailedDisplayNode00->");
             if (!isRestore) {
                 log("before setFailedDisplayNode->");
                 log("item.address->" + item.address);
@@ -615,17 +617,17 @@ function DBRecovery() {
             }
 
             log("getNodeIdByIp2 values->" + values);
-            if (!id && multiregion && !values.secondEnv) {
-                let envName1 = getParam('envName1', '');
-                let envName2 = getParam('envName2', '');
-                let resp = me.getNodeIdByIp({
-                    envName: values.envName == envName1 ? envName2 : envName1,
-                    secondEnv: true
-                });
-                log("getNodeIdByIp2 resp->" + resp);
-                if (resp.result != 0) return resp;
-                if (resp.nodeid) id = resp.nodeid;
-            }
+            // if (!id && multiregion && !values.secondEnv) {
+            //     let envName1 = getParam('envName1', '');
+            //     let envName2 = getParam('envName2', '');
+            //     let resp = me.getNodeIdByIp({
+            //         envName: values.envName == envName1 ? envName2 : envName1,
+            //         secondEnv: true
+            //     });
+            //     log("getNodeIdByIp2 resp->" + resp);
+            //     if (resp.result != 0) return resp;
+            //     if (resp.nodeid) id = resp.nodeid;
+            // }
             log("getNodeIdByIp id->" + id);
 
             return {
