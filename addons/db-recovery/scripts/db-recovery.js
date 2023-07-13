@@ -519,10 +519,12 @@ function DBRecovery() {
         if (!me.primaryRestored() && me.getFailedPrimaries().length) {
             scenario = me.getScenario(PRIMARY + "_" + ((me.getScheme() == SECONDARY) ? SECONDARY : PRIMARY));
         } else {
+            log("me.getAdditionalPrimary()->" + me.getAdditionalPrimary());
             if (me.getAdditionalPrimary()) {
                 donor = me.getPrimaryDonor() + " --additional-primary " + me.getAdditionalPrimary();
             }
         }
+        log("donor->" + donor);
 
         if (me.getEnvNames().length) {
             scenario = me.getScenario(PRIMARY + "_" + PRIMARY);
