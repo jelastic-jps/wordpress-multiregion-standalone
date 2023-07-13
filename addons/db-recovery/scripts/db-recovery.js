@@ -372,14 +372,10 @@ function DBRecovery() {
                 }
             }
 
-            log("me.getDonorIp()->" + me.getDonorIp());
 
-            log("before setFailedDisplayNode00->");
             if (!isRestore) {
-                log("before setFailedDisplayNode->");
-                log("item.address->" + item.address);
                 resp = nodeManager.setFailedDisplayNode(item.address);
-                log("setFailedDisplayNode resp->" + resp);
+
                 if (resp.result != 0) return resp;
                 if (!resp.nodeid) {
                     let envNames = me.getEnvNames();
@@ -414,6 +410,7 @@ function DBRecovery() {
             }
 
             resp = nodeManager.setFailedDisplayNode(item.address, true);
+            log("in checkPrimary setFailedDisplayNode resp->" + resp);
             if (resp.result != 0) return resp;
         }
         log("me.getDonorIp()->" + me.getDonorIp());
@@ -476,10 +473,17 @@ function DBRecovery() {
 
         if (failedNodes.length) {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
-                let resp = nodeManager.getNodeIdByIp(failedNodes[i].address);
+                let resp = nodeManager.getNodeIdByIp({
+                    address: failedNodes[i].address,
+                    envName: failedNodes[i].envName
+                });
                 if (resp.result != 0) return resp;
 
-                resp = me.execRecovery({ nodeid: resp.nodeid });
+                resp = me.execRecovery({
+                    envName: failedNodes[i].envName,
+                    address: failedNodes[i].address,
+                    nodeid: resp.nodeid
+                });
                 if (resp.result != 0) return resp;
 
                 resp = me.parseResponse(resp.responses);
@@ -495,18 +499,19 @@ function DBRecovery() {
         values = values || {};
         api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values.diagnostic));
         return nodeManager.cmd({
-            command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values.diagnostic),
+            command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values),
             nodeid: values.nodeid || "",
             envName: values.envName
         });
     };
 
-    me.formatRecoveryAction = function(diagnostic) {
+    me.formatRecoveryAction = function(values) {
+        values = values || {};
         let scenario = me.getScenario(me.getScheme());
         let donor = me.getDonorIp();
         let action = "";
 
-        if (diagnostic) return " --diagnostic";
+        if (values.diagnostic) return " --diagnostic";
 
         if (me.getInitialize()) {
             return "init";
@@ -523,6 +528,7 @@ function DBRecovery() {
         if (me.getEnvNames().length) {
             scenario = me.getScenario(PRIMARY + "_" + PRIMARY);
         }
+
 
         if (scenario && donor) {
             action = "--scenario restore_" + scenario + " --donor-ip " + donor;
@@ -603,8 +609,7 @@ function DBRecovery() {
         me.getNodeIdByIp = function(values) {
             var envInfo,
                 nodes,
-                id = "",
-                multiregion = getParam('multiregion', false);
+                id = "";
 
             envInfo = me.getEnvInfo({
                 envName : values.envName,
@@ -614,28 +619,12 @@ function DBRecovery() {
 
             nodes = envInfo.nodes;
 
-            log("getNodeIdByIp222 nodes->" + nodes);
             for (var i = 0, n = nodes.length; i < n; i++) {
-                log("nodes[i].address->" + nodes[i].address);
                 if (nodes[i].address == values.address) {
                     id = nodes[i].id;
                     break;
                 }
             }
-
-            log("getNodeIdByIp2 values->" + values);
-            // if (!id && multiregion && !values.secondEnv) {
-            //     let envName1 = getParam('envName1', '');
-            //     let envName2 = getParam('envName2', '');
-            //     let resp = me.getNodeIdByIp({
-            //         envName: values.envName == envName1 ? envName2 : envName1,
-            //         secondEnv: true
-            //     });
-            //     log("getNodeIdByIp2 resp->" + resp);
-            //     if (resp.result != 0) return resp;
-            //     if (resp.nodeid) id = resp.nodeid;
-            // }
-            log("getNodeIdByIp id->" + id);
 
             return {
                 result: 0,
@@ -676,6 +665,7 @@ function DBRecovery() {
             removeLabelFailed = !!removeLabelFailed;
 
             log("setFailedDisplayNode address->" + address);
+            log("setFailedDisplayNode removeLabelFailed->" + removeLabelFailed);
             resp = me.getNodeIdByIp({
                 address: address
             });
@@ -704,6 +694,7 @@ function DBRecovery() {
 
             node.displayName = node.displayName || ("Node ID: " + node.id);
 
+            log("isRestore->" + isRestore);
             if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
 
             displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
