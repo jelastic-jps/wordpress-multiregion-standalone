@@ -557,7 +557,7 @@ function DBRecovery() {
         me.getEnvInfo = function(values) {
             var resp;
 
-            if (!envInfo) {
+            if (!envInfo && !values.reset) {
                 envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
             }
 
@@ -604,7 +604,8 @@ function DBRecovery() {
                 multiregion = getParam('multiregion', false);
 
             envInfo = me.getEnvInfo({
-                envName : values.envName
+                envName : values.envName,
+                reset: values.reset || false
             });
             if (envInfo.result != 0) return envInfo;
 
@@ -681,8 +682,9 @@ function DBRecovery() {
                 let envName2 = getParam('envName2', '');
 
                 resp = me.getNodeIdByIp({
+                    envName: envName == envName1 ? envName2 : envName1,
                     address: address,
-                    envName: envName == envName1 ? envName2 : envName1
+                    reset: true
                 });
                 log("resp second getNodeIdByIp->" + resp);
             }
