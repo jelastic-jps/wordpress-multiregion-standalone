@@ -472,6 +472,7 @@ function DBRecovery() {
 
         if (failedNodes.length) {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
+                log("me.getFailedNodes()->" + me.getFailedNodes());
                 if (failedNodes[i].address == me.getDonorIp()) {
                     continue;
                 }
