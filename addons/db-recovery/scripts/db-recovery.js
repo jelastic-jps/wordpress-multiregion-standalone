@@ -475,7 +475,7 @@ function DBRecovery() {
                 if (failedNodes[i].address == me.getDonorIp()) {
                     continue;
                 }
-                
+
                 let resp = nodeManager.getNodeIdByIp({
                     address: failedNodes[i].address,
                     envName: failedNodes[i].envName,
@@ -630,7 +630,6 @@ function DBRecovery() {
                 reset: values.reset || false
             });
             log("getNodeIdByIp getNodeIdByIp00 values->" + values);
-            log("getNodeIdByIp getNodeIdByIp00 envInfo->" + envInfo);
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
