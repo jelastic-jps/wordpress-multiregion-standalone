@@ -135,22 +135,23 @@ function DBRecovery() {
     me.processMultiRegion = function() {
         let envName1 = getParam('envName1', '');
         let envName2 = getParam('envName2', '');
+        let currentEnvName = envName == envName1 ? envName2 : envName1;
 
         me.setEnvNames([envName1, envName2]);
 
         let resp = me.execRecovery({
-            envName: envName == envName1 ? envName2 : envName1,
+            envName: currentEnvName,
             diagnostic: true
         });
         if (resp.result != 0) return resp;
 
         for (let i = 0, n = resp.responses.length; i < n; i++) {
             if (resp.responses[i]) {
-                resp.responses[i].envName = envName == envName1 ? envName2 : envName1;
+                resp.responses[i].envName = currentEnvName;
                 // me.setFailedNodes(resp.responses[i]);
             }
         }
-        return me.parseResponse(resp.responses);
+        return me.parseResponse(resp.responses, currentEnvName);
     };
 
     me.getScheme = function() {
@@ -259,7 +260,7 @@ function DBRecovery() {
         config.donorIp = donor;
     };
 
-    me.parseResponse = function parseResponse(response) {
+    me.parseResponse = function parseResponse(response, envName) {
         let resp;
 
         for (let i = 0, n = response.length; i < n; i++) {
@@ -294,7 +295,7 @@ function DBRecovery() {
 
                         case PRIMARY:
                             log("primary->");
-                            resp = me.checkPrimary(item);
+                            resp = me.checkPrimary(item, envName);
                             if (resp.result != 0) return resp;
                             break;
 
@@ -356,7 +357,7 @@ function DBRecovery() {
         }
     };
 
-    me.checkPrimary = function(item) {
+    me.checkPrimary = function(item, envName) {
         let resp;
 
         if (item.service_status == DOWN || item.status == FAILED) {
@@ -394,7 +395,7 @@ function DBRecovery() {
             if (item.status == FAILED) {
                 me.setFailedNodes({
                     address: item.address,
-                    envName: item.envName || envName
+                    envName: envName
                 });
             }
         }
