@@ -36,7 +36,7 @@ function DBRecovery() {
         });
         if (resp.result != 0) return resp;
 
-        resp = me.parseResponse(resp.responses, true);
+        resp = me.parseResponse(resp.responses);
 
         if (isRestore) {
             let failedPrimaries = me.getFailedPrimaries();
@@ -260,7 +260,7 @@ function DBRecovery() {
         config.donorIp = donor;
     };
 
-    me.parseResponse = function parseResponse(response, envName) {
+    me.parseResponse = function parseResponse(response, currentEnvName) {
         let resp;
 
         for (let i = 0, n = response.length; i < n; i++) {
@@ -295,7 +295,7 @@ function DBRecovery() {
 
                         case PRIMARY:
                             log("primary->");
-                            resp = me.checkPrimary(item, envName);
+                            resp = me.checkPrimary(item, currentEnvName);
                             if (resp.result != 0) return resp;
                             break;
 
@@ -357,7 +357,7 @@ function DBRecovery() {
         }
     };
 
-    me.checkPrimary = function(item, envName) {
+    me.checkPrimary = function(item, currentEnvName) {
         let resp;
 
         if (item.service_status == DOWN || item.status == FAILED) {
@@ -380,7 +380,7 @@ function DBRecovery() {
                 if (!resp.nodeid) {
                     let envNames = me.getEnvNames();
                     resp = nodeManager.getNodeIdByIp({
-                        envName: envName == envNames[0] ? envNames[1] : envNames[0],
+                        envName: currentEnvName == envNames[0] ? envNames[1] : envNames[0],
                         address: item.address
                     });
                     if (resp.result != 0) return resp;
@@ -395,7 +395,7 @@ function DBRecovery() {
             if (item.status == FAILED) {
                 me.setFailedNodes({
                     address: item.address,
-                    envName: envName
+                    envName: currentEnvName || envName
                 });
             }
         }
