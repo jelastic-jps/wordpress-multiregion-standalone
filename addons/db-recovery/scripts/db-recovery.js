@@ -472,6 +472,10 @@ function DBRecovery() {
 
         if (failedNodes.length) {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
+                if (failedNodes[i].address == me.getDonorIp()) {
+                    continue;
+                }
+                
                 let resp = nodeManager.getNodeIdByIp({
                     address: failedNodes[i].address,
                     envName: failedNodes[i].envName,
@@ -480,6 +484,7 @@ function DBRecovery() {
                 log("getNodeIdByIp00 resp->" + resp);
                 if (resp.result != 0) return resp;
 
+                log("execRecovery on failedNodes[i].envName resp.nodeid->" + failedNodes[i].envName + "-" + resp.nodeid);
                 resp = me.execRecovery({
                     envName: failedNodes[i].envName,
                     address: failedNodes[i].address,
@@ -489,6 +494,10 @@ function DBRecovery() {
 
                 resp = me.parseResponse(resp.responses);
                 if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
+
+                if (resp.result == 0) {
+                    failedNodes.splice(i, 1);
+                }
             }
         }
 
