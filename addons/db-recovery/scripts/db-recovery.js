@@ -486,7 +486,7 @@ function DBRecovery() {
                 log("getNodeIdByIp00 resp->" + resp);
                 if (resp.result != 0) return resp;
 
-                log("execRecovery on failedNodes[i].envName resp.nodeid->" + failedNodes[i].envName + "-" + resp.nodeid);
+                log("execRecovery on2 failedNodes[i].envName resp.nodeid->" + failedNodes[i].envName + "-" + resp.nodeid);
                 resp = me.execRecovery({
                     envName: failedNodes[i].envName,
                     address: failedNodes[i].address,
@@ -498,7 +498,7 @@ function DBRecovery() {
                 if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
 
                 if (resp.result == 0) {
-                    failedNodes.splice(i, 1);
+                    failedNodes[i] = "";
                 }
             }
         }
