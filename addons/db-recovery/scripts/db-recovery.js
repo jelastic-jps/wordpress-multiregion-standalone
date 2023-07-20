@@ -23,6 +23,8 @@ function DBRecovery() {
         config = {},
         nodeManager;
 
+    let multiregion = getParam('multiregion', false);
+
     nodeManager = new nodeManager();
 
     me.process = function() {
@@ -34,7 +36,7 @@ function DBRecovery() {
         });
         if (resp.result != 0) return resp;
 
-        resp = me.parseResponse(resp.responses, true);
+        resp = me.parseResponse(resp.responses);
 
         if (isRestore) {
             let failedPrimaries = me.getFailedPrimaries();
@@ -52,8 +54,6 @@ function DBRecovery() {
             resp = me.recoveryNodes();
             if (resp.result != 0) return resp;
         } else {
-            log("me.getEvent()" + me.getEvent());
-            log("me.getAction()" + me.getAction());
             if (me.getEvent() && me.getAction()) {
                 return {
                     result: 0,
@@ -121,6 +121,7 @@ function DBRecovery() {
             me.setScheme(PRIMARY);
             resp = me.processMultiRegion();
             if (resp.result != 0) return resp;
+            // me.setEvent(true);
         } else {
             resp = me.defineScheme();
             if (resp.result != 0) return resp;
@@ -132,22 +133,23 @@ function DBRecovery() {
     me.processMultiRegion = function() {
         let envName1 = getParam('envName1', '');
         let envName2 = getParam('envName2', '');
+        let currentEnvName = envName == envName1 ? envName2 : envName1;
 
         me.setEnvNames([envName1, envName2]);
 
         let resp = me.execRecovery({
-            envName: envName == envName1 ? envName2 : envName1,
+            envName: currentEnvName,
             diagnostic: true
         });
         if (resp.result != 0) return resp;
 
         for (let i = 0, n = resp.responses.length; i < n; i++) {
             if (resp.responses[i]) {
-                resp.responses[i].envName = envName == envName1 ? envName2 : envName1;
+                resp.responses[i].envName = currentEnvName;
                 // me.setFailedNodes(resp.responses[i]);
             }
         }
-        return me.parseResponse(resp.responses);
+        return me.parseResponse(resp.responses, currentEnvName);
     };
 
     me.getScheme = function() {
@@ -256,7 +258,7 @@ function DBRecovery() {
         config.donorIp = donor;
     };
 
-    me.parseResponse = function parseResponse(response) {
+    me.parseResponse = function parseResponse(response, currentEnvName) {
         let resp;
 
         for (let i = 0, n = response.length; i < n; i++) {
@@ -289,7 +291,7 @@ function DBRecovery() {
                             break;
 
                         case PRIMARY:
-                            resp = me.checkPrimary(item);
+                            resp = me.checkPrimary(item, currentEnvName);
                             if (resp.result != 0) return resp;
                             break;
 
@@ -351,7 +353,7 @@ function DBRecovery() {
         }
     };
 
-    me.checkPrimary = function(item) {
+    me.checkPrimary = function(item, currentEnvName) {
         let resp;
 
         if (item.service_status == DOWN || item.status == FAILED) {
@@ -366,13 +368,15 @@ function DBRecovery() {
                 }
             }
 
+
             if (!isRestore) {
                 resp = nodeManager.setFailedDisplayNode(item.address);
+
                 if (resp.result != 0) return resp;
                 if (!resp.nodeid) {
                     let envNames = me.getEnvNames();
                     resp = nodeManager.getNodeIdByIp({
-                        envName: envName == envNames[0] ? envNames[1] : envNames[0],
+                        envName: currentEnvName == envNames[0] ? envNames[1] : envNames[0],
                         address: item.address
                     });
                     if (resp.result != 0) return resp;
@@ -387,7 +391,7 @@ function DBRecovery() {
             if (item.status == FAILED) {
                 me.setFailedNodes({
                     address: item.address,
-                    envName: item.envName || envName
+                    envName: currentEnvName || envName
                 });
             }
         }
@@ -462,14 +466,30 @@ function DBRecovery() {
 
         if (failedNodes.length) {
             for (let i = 0, n = failedNodes.length; i < n; i++) {
-                let resp = nodeManager.getNodeIdByIp(failedNodes[i].address);
+                if (failedNodes[i].address == me.getDonorIp()) {
+                    continue;
+                }
+
+                let resp = nodeManager.getNodeIdByIp({
+                    address: failedNodes[i].address,
+                    envName: failedNodes[i].envName,
+                    reset: true
+                });
                 if (resp.result != 0) return resp;
 
-                resp = me.execRecovery({ nodeid: resp.nodeid });
+                resp = me.execRecovery({
+                    envName: failedNodes[i].envName,
+                    address: failedNodes[i].address,
+                    nodeid: resp.nodeid
+                });
                 if (resp.result != 0) return resp;
 
                 resp = me.parseResponse(resp.responses);
                 if (resp.result == UNABLE_RESTORE_CODE || resp.result == FAILED_CLUSTER_CODE) return resp;
+
+                if (resp.result == 0) {
+                    failedNodes[i] = "";
+                }
             }
         }
 
@@ -477,22 +497,22 @@ function DBRecovery() {
     };
 
     me.execRecovery = function(values) {
-        log("values->" + values);
         values = values || {};
-        api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values.diagnostic));
+        api.marketplace.console.WriteLog("curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values));
         return nodeManager.cmd({
-            command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values.diagnostic),
+            command: "curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh && bash /tmp/db-recovery.sh " + me.formatRecoveryAction(values),
             nodeid: values.nodeid || "",
             envName: values.envName
         });
     };
 
-    me.formatRecoveryAction = function(diagnostic) {
+    me.formatRecoveryAction = function(values) {
+        values = values || {};
         let scenario = me.getScenario(me.getScheme());
         let donor = me.getDonorIp();
         let action = "";
 
-        if (diagnostic) return " --diagnostic";
+        if (values.diagnostic) return " --diagnostic";
 
         if (me.getInitialize()) {
             return "init";
@@ -544,9 +564,9 @@ function DBRecovery() {
             envInfo;
 
         me.getEnvInfo = function(values) {
-            var resp;
+            values = values || {};
 
-            if (!envInfo) {
+            if (!envInfo || values.reset) {
                 envInfo = api.env.control.GetEnvInfo(values.envName || envName, session);
             }
 
@@ -586,13 +606,16 @@ function DBRecovery() {
             }
         };
 
-        me.getNodeIdByIp= function(values) {
+        me.getNodeIdByIp = function(values) {
             var envInfo,
                 nodes,
                 id = "";
 
+            values = values || {};
+
             envInfo = me.getEnvInfo({
-                envName : values.envName
+                envName : values.envName || envName,
+                reset: values.reset || false
             });
             if (envInfo.result != 0) return envInfo;
 
@@ -611,18 +634,23 @@ function DBRecovery() {
             }
         };
 
-        me.getNodeInfoById = function(id) {
+        me.getNodeInfoById = function(values) {
             var envInfo,
                 nodes,
                 node;
 
-            envInfo = me.getEnvInfo();
+            values = values || {};
+
+            envInfo = me.getEnvInfo({
+                envName: values.envName || "",
+                reset: true
+            });
             if (envInfo.result != 0) return envInfo;
 
             nodes = envInfo.nodes;
 
             for (var i = 0, n = nodes.length; i < n; i++) {
-                if (nodes[i].id == id) {
+                if (nodes[i].id == values.id) {
                     node = nodes[i];
                     break;
                 }
@@ -636,6 +664,7 @@ function DBRecovery() {
 
         me.setFailedDisplayNode = function(address, removeLabelFailed) {
             var REGEXP = new RegExp('\\b - ' + FAILED + '\\b', 'gi'),
+                currentEnvName = envName,
                 displayName,
                 resp,
                 node;
@@ -643,20 +672,39 @@ function DBRecovery() {
             removeLabelFailed = !!removeLabelFailed;
 
             resp = me.getNodeIdByIp({
-                address: address
+                envName: currentEnvName,
+                address: address,
+                reset: true
             });
+
+            if (resp.result == 0 && multiregion && !resp.nodeid) {
+                let envName1 = getParam('envName1', '');
+                let envName2 = getParam('envName2', '');
+
+                currentEnvName = envName == envName1 ? envName2 : envName1;
+
+                resp = me.getNodeIdByIp({
+                    envName: currentEnvName,
+                    address: address,
+                    reset: true
+                });
+            }
+
             if (resp.result != 0 || !resp.nodeid) return resp;
 
-            resp = me.getNodeInfoById(resp.nodeid);
+            resp = me.getNodeInfoById({
+                envName: currentEnvName,
+                id: resp.nodeid
+            });
             if (resp.result != 0) return resp;
             node = resp.node;
 
             node.displayName = node.displayName || ("Node ID: " + node.id);
 
-            if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
+            // if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
 
             displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
-            return api.env.control.SetNodeDisplayName(envName, session, node.id, displayName);
+            return api.env.control.SetNodeDisplayName(currentEnvName, session, node.id, displayName);
         };
 
         me.cmd = function(values) {
