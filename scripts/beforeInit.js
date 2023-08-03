@@ -7,7 +7,8 @@ var cdnAppid = "c05ffa5b45628a2a0c95467ebca8a0b4",
     resp,
     LE = "le-addon",
     LS = "ls-addon",
-    CDN = "cdn-addon";
+    CDN = "cdn-addon",
+    advancedFeatures = false;
 
 let hasCollaboration = (parseInt('${fn.compareEngine(7.0)}', 10) >= 0);
 let extIP = "environment.externalip.enabled";
@@ -21,6 +22,7 @@ function defineAppFields(appid, name) {
     if (resp.result == 0 || resp.result == Response.PERMISSION_DENIED) {
         fields[name].hidden = false;
         fields[name].value = true;
+        advancedFeatures = true;
     } else {
         fields[name].hidden = true;
         fields[name].value = false;
@@ -81,6 +83,12 @@ if (quotas[0].value == 0 || quotas[1].value == 0 || quotas[2].value == 0) {
     height = (count > 3) ? 60 : 30;
 
     jps.settings.fields.push({"type": "displayfield", "cls": "warning", "height": height, "hideLabel": true, "markup": "Using of Let's Encrypt add-on with public IP's is not possible because of such quota's values: " + markup});
+} else {
+    advancedFeatures = true;
+}
+
+if (!advancedFeatures) {
+    fields["displayfield"].hidden = true;
 }
 
 resp = api.environment.control.GetEnvs();
