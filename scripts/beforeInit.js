@@ -6,6 +6,7 @@ var cdnAppid = "c05ffa5b45628a2a0c95467ebca8a0b4",
     field,
     resp,
     LE = "le-addon",
+    LS = "ls-addon",
     CDN = "cdn-addon";
 
 let hasCollaboration = (parseInt('${fn.compareEngine(7.0)}', 10) >= 0);
@@ -40,6 +41,7 @@ for (var i = 0, n = jps.settings.fields.length; i < n; i++) {
 }
 
 if (fields[CDN]) defineAppFields(cdnAppid, CDN);
+if (fields[LS]) defineAppFields(lsAppid, LS);
 if (hasCollaboration) {
     quotas = [
         { quota : { name: extIP }, value: parseInt('${quota.environment.externalip.enabled}', 10) },
