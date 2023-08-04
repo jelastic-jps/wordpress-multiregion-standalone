@@ -703,7 +703,13 @@ function DBRecovery() {
 
             // if (!isRestore && node.displayName.indexOf(FAILED_UPPER_CASE) != -1) return { result: 0 }
 
-            displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
+            if (removeLabelFailed) {
+                displayName =  node.displayName.replace(REGEXP, "");
+            } else {
+                displayName = node.displayName.indexOf(FAILED_UPPER_CASE) == -1 ? (node.displayName + " - " + FAILED_UPPER_CASE) : node.displayName;
+            }
+
+            // displayName = removeLabelFailed ? node.displayName.replace(REGEXP, "") : (node.displayName + " - " + FAILED_UPPER_CASE);
             return api.env.control.SetNodeDisplayName(currentEnvName, session, node.id, displayName);
         };
 
