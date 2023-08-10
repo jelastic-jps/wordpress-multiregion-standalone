@@ -144,7 +144,7 @@ if (regions.result != 0) return regions;
 
 if (regions.array.length < 2) {
   markup = "Package cannot be installed on less than 2 regions. Please contact support or choose a provider with more regions";
-  settings.fields.push(
+  jps.settings.fields.push(
     {"type": "displayfield", "cls": "warning", "height": 30, "hideLabel": true, "markup": markup},
     {"type": "compositefield","height": 0,"hideLabel": true,"width": 0,"items": [{"height": 0,"type": "string","required": true}]}
   );
