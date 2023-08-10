@@ -131,8 +131,11 @@ onInstall:
   - getEnvNodes
   - installReplications
   - installWordpress
-  - if (${settings.cdn-addon:false}): installCDNaddon
-  - if (${settings.le-addon:false}):
+  - if (${settings.cdn-addon:false}): 
+    - installCDNaddon
+    - setGlobals:
+        success: cdn
+  - if (${settings.ls-addon:false}):
       setGlobals:
         stack: LLSMP
   
@@ -253,13 +256,16 @@ actions:
         le-addon: ${settings.le-addon:false}
 
   installCDNaddon:
-    install:
-      jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
-      envName: ${settings.envName}-1
-      skipEmail: true
-      nodeGroup: cp
-      settings:
-        note: ${settings.noteCDN:}
+    - install:
+        jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
+        envName: ${settings.envName}-1
+        skipEmail: true
+        nodeGroup: cp
+        settings:
+          note: ${settings.noteCDN:}
+    - script: return jelastic.dev.scripting.Eval("c05ffa5b45628a2a0c95467ebca8a0b4", session, "cdn.info", {partnerCode:1})
+    - setGlobals:
+        cdn_url: ${globals.protocol}://${settings.envName}-1-${response.response.partnerCode}.cdn.jelastic.net/
 
   setProtocol:
     - script: |
