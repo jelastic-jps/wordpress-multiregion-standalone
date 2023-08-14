@@ -80,7 +80,7 @@ for (let i = 0, n = quotas.length; i < n; i++) {
 if (quotas[0].value == 0 || quotas[1].value == 0 || quotas[2].value == 0) {
     fields[LE].hidden = true;
     fields[LE].value = false;
-    height = (count > 3) ? 60 : 30;
+    height = (count > 2) ? 60 : 30;
 
     jps.settings.fields.push({"type": "displayfield", "cls": "warning", "height": height, "hideLabel": true, "markup": "Using of Let's Encrypt add-on with public IP's is not possible because of such quota's values: " + markup});
 } else {
