@@ -3,7 +3,7 @@ id: multiregions-primary-replication-manager
 name: Multi-Regions Primary Replication Manager
 description: Multi-Regions Primary Replication Manager
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/JE-62666
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
 
 globals:
   db_user: ${settings.db_user}
