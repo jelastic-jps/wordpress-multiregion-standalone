@@ -13,7 +13,7 @@ logo: /images/logo/new-logo-multiregion-standalone.svg
 
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
 
-onBeforeInit: /scripts/beforeInit.js
+onBeforeInit: /scripts/onBeforeInit.js
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
