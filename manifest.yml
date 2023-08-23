@@ -11,9 +11,9 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: /images/logo/new-logo-multiregion-standalone.svg
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/WP-654
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
 
-onBeforeInit: https://github.com/jelastic-jps/wordpress/raw/master/wordpress-edition/scripts/onBeforeInit.js
+onBeforeInit: /scripts/beforeInit.js
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
@@ -26,19 +26,42 @@ settings:
       name: displayfield
       markup:
  
-    - caption: WordPress Brute Force Attack Protection
+    - caption: Install LiteSpeed High-Performance Web Server
       type: checkbox
-      name: wp_protect
+      name: ls-addon
       value: true
       disabled: false
-      tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>."
+      tooltip: "If this option is disabled, the cluster will be installed using NGINX load balancer and application servers"
+      showIf:
+        true:
+          - caption: WordPress Brute Force Attack Protection
+            type: checkbox
+            name: wp_protect
+            value: true
+            disabled: false
+            tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>"
 
-    - caption: Web Application Firewall
-      type: checkbox
-      name: waf
-      value: true
-      disabled: false
-      tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo."
+          - caption: Web Application Firewall
+            type: checkbox
+            name: waf
+            value: true
+            disabled: false
+            tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo"
+
+        false:
+          - caption: WordPress Brute Force Attack Protection
+            type: checkbox
+            name: wp_protect
+            value: false
+            disabled: true
+            tooltip: "Secure WordPress Admin Panel with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:config:wordpress-protection' target='_blank'>LiteSpeed Brute Force Protection</a> that limits failed login attempts. Default action is <b>Throttle</b> and number of allowed attempts is <b>100</b>"
+        
+          - caption: Web Application Firewall
+            type: checkbox
+            name: waf
+            value: false
+            disabled: true
+            tooltip: "Protect web sites with <a href='https://www.litespeedtech.com/support/wiki/doku.php/litespeed_wiki:waf' target='_blank'>LiteSpeed built-in WAF</a> based on Free ModSecurity Rules from Comodo"
 
     - caption: Install Let's Encrypt SSL with Auto-Renewal
       type: checkbox
@@ -95,11 +118,13 @@ globals:
   protocol: http
   wp_admin_pass: ${fn.password(10)}
   success: default
+  stack: LEMP
 
 onInstall:
   - initGlobals
   - setGlobals:
       domain: ${settings.envName}-1.${globals.domain-1}
+  - checkDomainsLength
   - setProtocol
   - createEnvs
   - configureLEaddon
@@ -107,7 +132,13 @@ onInstall:
   - getEnvNodes
   - installReplications
   - installWordpress
-  - if (${settings.cdn-addon:false}): installCDNaddon
+  - if (${settings.cdn-addon:false}): 
+    - installCDNaddon
+    - setGlobals:
+        success: cdn
+  - if (${settings.ls-addon:false}):
+      setGlobals:
+        stack: LLSMP
   
 actions:
 
@@ -150,7 +181,7 @@ actions:
             displayName: "${globals.displayName-" + cluster + "}",
             region: "${globals.region-" + cluster + "}",
             settings: {
-              "ls-addon": "true",
+              "ls-addon": "${settings.ls-addon}",
               "waf": "${settings.waf}",
               "wp_protect": "${settings.wp_protect}",
               "le-addon": "false",
@@ -226,13 +257,16 @@ actions:
         le-addon: ${settings.le-addon:false}
 
   installCDNaddon:
-    install:
-      jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
-      envName: ${settings.envName}-1
-      skipEmail: true
-      nodeGroup: cp
-      settings:
-        note: ${settings.noteCDN:}
+    - install:
+        jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
+        envName: ${settings.envName}-1
+        skipEmail: true
+        nodeGroup: cp
+        settings:
+          note: ${settings.noteCDN:}
+    - script: return jelastic.dev.scripting.Eval("c05ffa5b45628a2a0c95467ebca8a0b4", session, "cdn.info", {partnerCode:1})
+    - setGlobals:
+        cdn_url: ${globals.protocol}://${settings.envName}-1-${response.response.partnerCode}.cdn.jelastic.net/
 
   setProtocol:
     - script: |
@@ -244,8 +278,45 @@ actions:
         setGlobals:
           protocol: https
 
+  checkDomainsLength:
+      script: |
+        var regionsList = "${settings.regions}";
+        var envName = "${settings.envName}", value, region;
+        
+        var regions = api.environment.control.GetRegions();
+        if (regions.result != 0) return regions;
+        
+        if (regions.array) {
+          for (var i = 0, n = regions.array.length; i < n; i++) {
+            region = regions.array[i];
+            if (region.hardNodeGroups && region.hardNodeGroups.length) {
+              for (var k = 0, l = region.hardNodeGroups.length; k < l; k++) {
+    
+                if (regionsList.indexOf(region.hardNodeGroups[k].uniqueName) != -1) {
+                  value = envName + "-1." + regions.array[i].domain;
+                  var messageValue = (50 - regions.array[i].domain.length);
+    
+                  if (value.length > 52) {
+                    return {
+                      result: 1009,
+                      message: "Domain name length for current regions must be less than " + messageValue
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        return {
+          result: 0
+        }
+responses:
+  1009:
+    type: warning
+
 success:
-  email: /success/email/success-${globals.success}.md?_r=${fn.random}
-  text: /success/text/success-${globals.success}.md?_r=${fn.random}
+  email: /success/email/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
+  text: /success/text/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
 
 startPage: ${globals.protocol}://${globals.domain}/
