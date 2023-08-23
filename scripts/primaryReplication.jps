@@ -5,7 +5,7 @@ description: Multi-Regions Primary Replication
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/WP-654/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/configs/additionalGlobals.yaml
 
 globals:
   master: ${settings.master:false}
