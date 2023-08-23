@@ -6,7 +6,7 @@ description:
   short: The add-on performs a diagnostic of your content synchronization between environments.
 logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/sync-recovery
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-358/addons/sync-recovery
 
 targetNodes:
   nodeGroup: 
@@ -175,14 +175,21 @@ actions:
         app_id: ${globals.app_id}
     - script: |
         var secondary_ip, resp, command;
-        resp = jelastic.env.control.GetEnvInfo("${globals.secondaryEnvName}", session);
+        if ('${env.envName}' == '${globals.primaryEnvName}') {
+          primaryEnvName = '${globals.primaryEnvName}';
+          secondaryEnvName = '${globals.secondaryEnvName}';
+        } else {
+          primaryEnvName = '${globals.secondaryEnvName}';
+          secondaryEnvName = '${globals.primaryEnvName}';
+        }
+        resp = jelastic.env.control.GetEnvInfo(secondaryEnvName, session);
         if (resp.result != 0) return resp;
         for (var i = 0, k = resp.nodes; i < k.length; i++) {
           if (k[i].nodeGroup == 'cp')
               k[i].ismaster ? secondary_ip = k[i].address : 0;
         }
         var command = "curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagnostic " + secondary_ip;
-        resp = api.env.control.ExecCmdByGroup('${globals.primaryEnvName}', session, 'cp', toJSON([{ "command": command }]), true, false, "root");
+        resp = api.env.control.ExecCmdByGroup(primaryEnvName, session, 'cp', toJSON([{ "command": command }]), true, false, "root");
         if (resp.result != 0) return resp;
         data = JSON.parse(resp.responses[0].out);
         return data.result;
