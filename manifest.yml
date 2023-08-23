@@ -124,6 +124,7 @@ onInstall:
   - initGlobals
   - setGlobals:
       domain: ${settings.envName}-1.${globals.domain-1}
+  - checkDomainsLength
   - setProtocol
   - createEnvs
   - configureLEaddon
@@ -131,11 +132,8 @@ onInstall:
   - getEnvNodes
   - installReplications
   - installWordpress
-  - if (${settings.cdn-addon:false}): 
-    - installCDNaddon
-    - setGlobals:
-        success: cdn
-  - if (${settings.ls-addon:false}):
+  - if (${settings.cdn-addon:false}): installCDNaddon
+  - if (${settings.le-addon:false}):
       setGlobals:
         stack: LLSMP
   
@@ -256,16 +254,13 @@ actions:
         le-addon: ${settings.le-addon:false}
 
   installCDNaddon:
-    - install:
-        jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
-        envName: ${settings.envName}-1
-        skipEmail: true
-        nodeGroup: cp
-        settings:
-          note: ${settings.noteCDN:}
-    - script: return jelastic.dev.scripting.Eval("c05ffa5b45628a2a0c95467ebca8a0b4", session, "cdn.info", {partnerCode:1})
-    - setGlobals:
-        cdn_url: ${globals.protocol}://${settings.envName}-1-${response.response.partnerCode}.cdn.jelastic.net/
+    install:
+      jps: https://raw.githubusercontent.com/edgeport/cdn/master/manifest.yml?_r=${fn.random}
+      envName: ${settings.envName}-1
+      skipEmail: true
+      nodeGroup: cp
+      settings:
+        note: ${settings.noteCDN:}
 
   setProtocol:
     - script: |
@@ -276,6 +271,42 @@ actions:
     - if (${response.ssl} || ${settings.le-addon:false}):
         setGlobals:
           protocol: https
+
+  checkDomainsLength:
+      script: |
+        var regionsList = "${settings.regions}";
+        var envName = "${settings.envName}", value, region;
+        
+        var regions = api.environment.control.GetRegions();
+        if (regions.result != 0) return regions;
+        
+        if (regions.array) {
+          for (var i = 0, n = regions.array.length; i < n; i++) {
+            region = regions.array[i];
+            if (region.hardNodeGroups && region.hardNodeGroups.length) {
+              for (var k = 0, l = region.hardNodeGroups.length; k < l; k++) {
+    
+                if (regionsList.indexOf(region.hardNodeGroups[k].uniqueName) != -1) {
+                  var messageValue = (50 - regions.array[i].domain.length);
+    
+                  if (value.length > 52) {
+                    return {
+                      result: 1009,
+                      message: "Domain name length for current regions must be less than " + messageValue
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        return {
+          result: 0
+        }
+responses:
+  1009:
+    type: warning
 
 success:
   email: /success/email/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
