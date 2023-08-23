@@ -23,7 +23,7 @@ actions:
 
   setupSynchronization:
     install:
-    - jps: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/manifest.jps?_r=${fn.random}
+    - jps: https://raw.githubusercontent.com/jelastic-jps/file-sync/JE-67536/manifest.jps?_r=${fn.random}
       nodeGroup: cp
       skipEmail: true
       settings:
