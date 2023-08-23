@@ -124,6 +124,7 @@ onInstall:
   - initGlobals
   - setGlobals:
       domain: ${settings.envName}-1.${globals.domain-1}
+  - checkDomainsLength
   - setProtocol
   - createEnvs
   - configureLEaddon
@@ -276,6 +277,43 @@ actions:
     - if (${response.ssl} || ${settings.le-addon:false}):
         setGlobals:
           protocol: https
+
+  checkDomainsLength:
+      script: |
+        var regionsList = "${settings.regions}";
+        var envName = "${settings.envName}", value, region;
+        
+        var regions = api.environment.control.GetRegions();
+        if (regions.result != 0) return regions;
+        
+        if (regions.array) {
+          for (var i = 0, n = regions.array.length; i < n; i++) {
+            region = regions.array[i];
+            if (region.hardNodeGroups && region.hardNodeGroups.length) {
+              for (var k = 0, l = region.hardNodeGroups.length; k < l; k++) {
+    
+                if (regionsList.indexOf(region.hardNodeGroups[k].uniqueName) != -1) {
+                  value = envName + "-1." + regions.array[i].domain;
+                  var messageValue = (50 - regions.array[i].domain.length);
+    
+                  if (value.length > 52) {
+                    return {
+                      result: 1009,
+                      message: "Domain name length for current regions must be less than " + messageValue
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        return {
+          result: 0
+        }
+responses:
+  1009:
+    type: warning
 
 success:
   email: /success/email/${globals.stack}/success-${globals.success}.md?_r=${fn.random}
