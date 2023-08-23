@@ -17,7 +17,7 @@ onBeforeInit: /scripts/onBeforeInit.js
 
 mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/WP-654/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/configs/additionalGlobals.yaml
 
 settings:
   fields:
