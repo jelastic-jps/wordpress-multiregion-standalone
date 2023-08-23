@@ -6,7 +6,7 @@ description:
   short: The add-on performs a comprehensive diagnostic of your database cluster and can perform automatic recovery.
 logo: https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/images/database-recovery.png
 
-baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/db-recovery
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/addons/db-recovery
 
 targetNodes:
   nodeGroup: 
@@ -22,7 +22,10 @@ globals:
   ssh-key: id_rsa_db_monitoring
   nodeGroup: cp
   tmp: /tmp/
-
+  diagnostic-failed: |-
+    Errors were discovered during the Database Cluster diagnostic.
+    Please check the **/var/log/db_recovery.log** log file for details. Click the "Cluster Recovery" button in the add-on's tab for automatic recovery.
+    llow the [Manual Recovery](https://github.com/jelastic-jps/mysql-cluster/blob/master/addons/recovery/docs/ManualRecoveryGuide.md) guide to recover the cluster manually.
 buttons:
   - name: diagnostic
     caption: Cluster Diagnostic
@@ -30,7 +33,7 @@ buttons:
     loadingText: Diagnostic is in progress...
     logsPath: /var/log/db_recovery.log
     action: diagnostic
-    
+
   - name: recovery
     confirmText: |-
       It is recommended to create <u><i><b><a target="_blank" rel="noopener noreferrer" href="https://www.virtuozzo.com/application-platform-docs/database-backups/">database backup</a></b></i></u> before recovery. Run cluster recovery?
@@ -54,6 +57,8 @@ settings:
 
 onAfterScaleOut[cp]: generate-share-keys
 onAfterRedeployContainer[cp]: generate-share-keys
+onBeforeStop:  eventDiagnostic
+onBeforeSetCloudletCount: eventDiagnostic
 
 onInstall:
   - getReplicaUser
@@ -112,7 +117,7 @@ responses:
   200:
     type: success
     message: Database Cluster is OK! No errors have been discovered.
-    
+
   201:
     type: success
     message: Database Cluster recovery has been finished successfully!
@@ -136,6 +141,7 @@ actions:
         app_id: ${globals.app_id}
     - script: /scripts/db-recovery.js
       exec: ' --diagnostic'
+      event: ${this.event:}
       nodeGroup: ${targetNodes.nodeGroup}
       multiregion: true
       envName1: ${globals.primaryEnvName}
@@ -150,7 +156,7 @@ actions:
       envName1: ${globals.primaryEnvName}
       envName2: ${globals.secondaryEnvName}
       nodeGroup: ${targetNodes.nodeGroup}
-    
+
   generate-share-keys:
     - cmd[${this.id}]: |-
         [ -f ${globals.ssh_root}${globals.ssh-key} ] && rm -f ${globals.ssh_root}${globals.ssh-key};
@@ -231,7 +237,7 @@ actions:
     - setGlobals:
         REPLICA_USER: ${response.object.REPLICA_USER}
         REPLICA_PSWD: ${response.object.REPLICA_PSWD}
-        
+
   installAddon:
     install: ${baseUrl}/manifest.yml
     envName: ${this.envName}
@@ -239,7 +245,15 @@ actions:
     settings:
       user: ${settings.user:}
       password: ${settings.password:}
-      
+
   installJQTool:
     cmd [cp]: rpm -qa | grep jq || yum -y install jq
     user: root
+
+  eventDiagnostic:
+      - diagnostic:
+          event: true
+      - if (${response.errors} == true):
+          stopEvent:
+            type: warning
+            message: ${globals.diagnostic-failed}

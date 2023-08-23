@@ -1,5 +1,5 @@
 globals:
-  base_path: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-218
+  base_path: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
   wp_cluster_path: https://raw.githubusercontent.com/jelastic-jps/wordpress-cluster/v2.2.0
   wp_standalone_path: https://raw.githubusercontent.com/jelastic-jps/wordpress/v2.2.0
-  db_cluster_path: https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v2.4.1
+  db_cluster_path: https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/v3.0.0
