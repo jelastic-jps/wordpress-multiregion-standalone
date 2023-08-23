@@ -5,7 +5,7 @@ description: Multi-Regions Primary Replication
 baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/WP-654/configs/additionalGlobals.yaml
 
 globals:
   master: ${settings.master:false}
@@ -46,7 +46,7 @@ onInstall:
 actions:
   setupMainUser:
     cmd[cp]: |-
-      wget ${globals.db_cluster_path}/scripts/setupUser.sh -O ~/setupUser.sh &>> /var/log/run.log;
+      wget ${globals.db_cluster_path}/scripts/setupUserCentosAlma.sh -O ~/setupUser.sh &>> /var/log/run.log;
       bash ~/setupUser.sh ${globals.db_user} ${globals.db_pass} &>> /var/log/run.log;
       jem passwd set -p ${globals.db_pass} &>> /var/log/run.log;
     user: root
