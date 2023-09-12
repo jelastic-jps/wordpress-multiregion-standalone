@@ -1,4 +1,4 @@
-<p align="left"> 
+<p align="center"> 
 <img src="images/logo/new-logo-multiregion-standalone-white-bg.svg" width="100">
 </p>
 

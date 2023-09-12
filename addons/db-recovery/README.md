@@ -11,7 +11,7 @@ This add-on provides an automated solution for database restoration and even rec
 
 The add-on is installed automatically during the **Multi-Region WordPress Cluster** creation. It is available via the list of add-ons of the database layer:
 
-![installed add-ons](images/03-installed-addons.png)
+![installed add-ons](images/01-installed-addons.png)
 
 
 ## Database Recovery How To
@@ -20,7 +20,7 @@ The add-on allows doing two actions:
 
 - **Cluster Diagnostic** - with this action, the add-on automatically scans all nodes in the cluster in order to identify whether the nodes are accessible and whether databases are consistent. If during diagnostic the database corruption or even node failure is detected, the add-on will warn you with a respective pop-up window:
 
-![diagnostic failure](images/04-diagnostic-failure.png)
+![diagnostic failure](images/02-diagnostic-failure.png)
 
 > **Tip:** Cluster diagnostic is triggered automatically before the **environment stop** and **cloudlets change** operations. The respective actions will proceed only if the database integrity is verified (to avoid additional damage to the cluster).
 
