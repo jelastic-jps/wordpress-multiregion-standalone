@@ -52,11 +52,12 @@ Find an **Multi-Regon WordPress Standalone** application in the [Marketplace](ht
 Upon the package installation, new environments will be created - one environment per [Region](https://www.virtuozzo.com/application-platform-docs/environment-regions). The required number of Regions for this solution is **two**.
 
 <p align="left"> 
-<img src="images/install.png" width="600">
+<img src="images/multi-region-wp-installation.png" width="600">
 </p>
 
 In the opened confirmation window, choose:  
 
+- Disable the **Install LiteSpeed High-Performance Web Server** option if you want to use the NGINX application server instead of LiteSpeed.
 - **WordPress Brute Force Attack Protection** (for LiteSpeed only) option will protect WordPress admin panel.
 - **Web Application Firewall** (for LiteSpeed only) secure feature that comes with Layer-7 Anti-DDoS Filtering as well as IP level bandwidth and request rate throttling. It won't degrade the LSADC performance since it can be tuned to withstand dynamic requests only.
 - Traffic encryption is provided by **[Let's Encrypt Add-On](https://www.virtuozzo.com/company/blog/free-ssl-certificates-with-lets-encrypt/)**  with automatic issuing of trusted SSL certificate and Auto-Renewal.
