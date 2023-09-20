@@ -1,5 +1,4 @@
 type: install
-targetEditions: wordpress
 name: Multi-Region WordPress Standalone
 id: wordpress-multiregion-standalone
 categories:
