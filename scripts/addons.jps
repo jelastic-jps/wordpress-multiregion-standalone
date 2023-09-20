@@ -3,10 +3,10 @@ id: wp-single-multiregions-addons
 name: WordPress Simple Multiregions Addons
 description: WordPress Simple Multiregions Addons
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
 onInstall:
   - installDependencies
@@ -44,7 +44,7 @@ addons:
     type: update
     name: Cache Manager
     description: Clean all caches.
-    logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/images/logo/multiregion-standalone.svg
+    logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/images/logo/multiregion-standalone.svg
     buttons:
       - caption: Clean all caches
         action: cachePurge
