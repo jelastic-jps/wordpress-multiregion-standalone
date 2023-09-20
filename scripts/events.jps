@@ -4,7 +4,7 @@ name: WordPress Simple MultiRegion Events
 description: WordPress Simple MultiRegion Events
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/configs/additionalGlobals.yaml
 
 onAfterInstallAddon [nodeGroup:cp, id:cdn]:
   - addFlag

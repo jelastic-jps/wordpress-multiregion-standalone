@@ -3,7 +3,7 @@ id: multiregions-primary-replication-manager
 name: Multi-Regions Primary Replication Manager
 description: Multi-Regions Primary Replication Manager
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
 
 globals:
   db_user: ${settings.db_user}
@@ -17,6 +17,10 @@ onInstall:
   - if ('${env.envName}' == '${globals.cluster_name}-1'):
     - install: 
       jps: /addons/db-recovery/manifest.yml?_r=${fn.random}
+      nodeGroup: cp
+      targetNodes: cp
+    - install: 
+      jps: /addons/sync-recovery/manifest.yml?_r=${fn.random}
       nodeGroup: cp
       targetNodes: cp
 

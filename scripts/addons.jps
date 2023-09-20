@@ -3,8 +3,10 @@ id: wp-single-multiregions-addons
 name: WordPress Simple Multiregions Addons
 description: WordPress Simple Multiregions Addons
 
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage
+
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/configs/additionalGlobals.yaml
 
 onInstall:
   - installDependencies
@@ -19,6 +21,7 @@ addons:
     type: update
     name: WordPress Base URL
     description: WordPress Base URL Configuration.
+    logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/images/logo/multiregion-standalone.svg
     settings:
       fields:
         - type: string
@@ -41,6 +44,7 @@ addons:
     type: update
     name: Cache Manager
     description: Clean all caches.
+    logo: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/images/logo/multiregion-standalone.svg
     buttons:
       - caption: Clean all caches
         action: cachePurge
@@ -66,18 +70,31 @@ actions:
     - setGlobals:
         clusterEnvs: ${response.items.join(,)} 
     - script: |
-        var envs = '${response.items.join(,)}'.split(','), api = [];
+        var envs = '${response.items.join(,)}'.split(','), api = [], resp;
         for (var i = 0, n = envs.length; i < n; i ++) {
-          api.push({
-            method: "env.control.ExecCmdByGroup",
-              envName: envs[i],
-              nodeGroup: "cp",
-              commandList: [
-                {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
-                {"command": "wp litespeed-purge all --path=/var/www/webroot/ROOT/;"},
-                {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
-              ]
-          });
+          resp = jelastic.env.control.GetEnvInfo(envs[i], session);
+          if (resp.result != 0) return resp;
+          if (resp.nodes[0].nodeType == 'llsmp') {
+            api.push({
+              method: "env.control.ExecCmdByGroup",
+                envName: envs[i],
+                nodeGroup: "cp",
+                commandList: [
+                  {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
+                  {"command": "rm -rf /var/www/webroot/.cache/vhosts/Jelastic/*;"},
+                ]
+            });
+          } else {
+            api.push({
+              method: "env.control.ExecCmdByGroup",
+                envName: envs[i],
+                nodeGroup: "cp",
+                commandList: [
+                  {"command": "wp cache flush --path=/var/www/webroot/ROOT/;"},
+                  {"command": "rm -rf /var/www/webroot/ROOT/.cache/*;"},
+                ]
+            });
+          }
         }
         return { result: 0, onAfterReturn: { api: api, async: true } }
 

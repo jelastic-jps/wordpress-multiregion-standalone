@@ -1,0 +1,200 @@
+type: update
+name: Content Synchronization Diagnostic
+id: sync-recovery
+description:
+  text: The add-on performs a diagnostic of your content synchronization between environments. 
+  short: The add-on performs a diagnostic of your content synchronization between environments.
+logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
+
+baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/stage/addons/sync-recovery
+
+targetNodes:
+  nodeGroup: 
+    - cp
+
+mixins:
+  - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
+
+globals:
+  app_id: sync-recovery
+  ssh_root: /root/.ssh/
+  ssh-key: id_rsa_sync_monitoring
+  nodeGroup: cp
+  tmp: /tmp/
+
+buttons:
+  - name: diagnostic
+    caption: Synchronization Diagnostic
+    confirmText: Run synchronization diagnostic?
+    loadingText: Diagnostic is in progress...
+    logsPath: /var/log/sync_diagnostic.log
+    action: diagnostic
+    
+onInstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+    - if (globals.isSecondaryEnv):
+      - return:
+          type: success
+    - else:
+      - generate-share-keys:
+          id: ${nodes.cp.master.id}
+      - createFile:
+          envName: ${globals.secondaryEnvName}
+          nodeGroup: ${targetNodes.nodeGroup}
+          app_id: ${globals.app_id}
+      - installAddon:
+          envName: ${globals.secondaryEnvName}
+
+onUninstall:
+  - checkClustering:
+      nodeGroup: ${targetNodes.nodeGroup}
+      app_id: ${globals.app_id}
+  - if (globals.cluster):
+      - if (!globals.isOppositeExecuted):
+          - markExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+          - if (env.name == globals.primaryEnvName):
+              executeAction:
+                envName: ${globals.secondaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - else:
+              executeAction:
+                envName: ${globals.primaryEnvName}
+                nodeGroup: ${globals.nodeGroup}
+                action: uninstall
+                app_id: ${globals.app_id}
+          - removeExecutedEnvFile:
+              nodeGroup: ${globals.nodeGroup}
+              app_id: ${globals.app_id}
+      - if (globals.isSecondaryEnv):
+          script: |
+            return {result: 0}
+      - else:
+          removeExecutedEnvFile:
+            nodeGroup: ${globals.nodeGroup}
+            app_id: ${globals.app_id}
+            extension: lock
+
+responses:
+  200:
+    type: success
+    message: Content synchronization status between environments is OK! No errors have been discovered.
+    
+  99:
+    type: success
+    message: |
+      Content synchronization status between environments is FAIL!
+      Please, check the /var/log/sync_diagnostic.log log file for details.
+
+actions:
+  generate-share-keys:
+    - cmd[${this.id}]: |-
+        [ -f ${globals.ssh_root}${globals.ssh-key} ] && rm -f ${globals.ssh_root}${globals.ssh-key};
+        [ -f ${globals.ssh_root}${globals.ssh-key}.pub ] && rm -f ${globals.ssh_root}${globals.ssh-key}.pub;
+        sed -i '/sync_monitoring/d' ${globals.ssh_root}authorized_keys;
+        ssh-keygen -t rsa -b 4098 -f ${globals.tmp}${globals.ssh-key} -q -N '' -C 'sync_monitoring' <<<y >/dev/null 2>&1
+        chown jelastic ${globals.tmp}${globals.ssh-key}*
+      user: root
+    - script: |
+        var resp, key = "";
+        
+        resp = api.environment.file.Read({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeid: "${nodes.cp.master.id}" 
+        });
+        if (resp.result != 0) return resp;
+        key = resp.body;
+        
+        resp =  api.environment.file.Write({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        resp =  api.environment.file.Write({
+          envName: "${globals.secondaryEnvName}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}.pub",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        resp = api.environment.file.Read({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeid: "${nodes.cp.master.id}" 
+        });
+        if (resp.result != 0) return resp;
+        key = resp.body;
+        
+        resp = api.environment.file.Write({
+          envName: "${env.name}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        resp = api.environment.file.Write({
+          envName: "${globals.secondaryEnvName}",
+          session: session,
+          path: "${globals.tmp}${globals.ssh-key}",
+          nodeGroup: "${globals.nodeGroup}",
+          nodeid: "-1",
+          body: key
+        });
+        if (resp.result != 0) return resp;
+        
+        return api.env.control.ExecCmdByGroup("${globals.secondaryEnvName}", session, "${globals.nodeGroup}", toJSON([{ command: "sed -i '/sync_monitoring/d' ${globals.ssh_root}authorized_keys; mv ${globals.tmp}${globals.ssh-key}* ${globals.ssh_root}; cat ${globals.ssh_root}${globals.ssh-key}.pub >> ${globals.ssh_root}authorized_keys" }]), true, false, "root");
+    - cmd [cp]: |-
+        mv ${globals.tmp}${globals.ssh-key}* ${globals.ssh_root}
+        cat ${globals.ssh_root}${globals.ssh-key}.pub >> ${globals.ssh_root}authorized_keys
+      user: root
+
+
+  diagnostic:
+    - checkClustering:
+        nodeGroup: ${targetNodes.nodeGroup}
+        app_id: ${globals.app_id}
+    - script: |
+        var secondary_ip, resp, command;
+        if ('${env.envName}' == '${globals.primaryEnvName}') {
+          primaryEnvName = '${globals.primaryEnvName}';
+          secondaryEnvName = '${globals.secondaryEnvName}';
+        } else {
+          primaryEnvName = '${globals.secondaryEnvName}';
+          secondaryEnvName = '${globals.primaryEnvName}';
+        }
+        resp = jelastic.env.control.GetEnvInfo(secondaryEnvName, session);
+        if (resp.result != 0) return resp;
+        for (var i = 0, k = resp.nodes; i < k.length; i++) {
+          if (k[i].nodeGroup == 'cp')
+              k[i].ismaster ? secondary_ip = k[i].address : 0;
+        }
+        var command = "curl --silent https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/WP-290/addons/sync-recovery/scripts/syncHealthCheck.sh > /tmp/syncHealthCheck.sh && bash /tmp/syncHealthCheck.sh diagnostic " + secondary_ip;
+        resp = api.env.control.ExecCmdByGroup(primaryEnvName, session, 'cp', toJSON([{ "command": command }]), true, false, "root");
+        if (resp.result != 0) return resp;
+        data = JSON.parse(resp.responses[0].out);
+        return data.result;
+        
+  installAddon:
+    install: ${baseUrl}/manifest.yml
+    envName: ${this.envName}
+    nodeGroup: ${globals.nodeGroup}
