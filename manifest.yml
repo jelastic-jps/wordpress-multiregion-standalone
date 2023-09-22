@@ -1,6 +1,7 @@
 type: install
 name: Multi-Region WordPress Standalone
 id: wordpress-multiregion-standalone
+targetEditions: any
 categories:
   - apps/clusters
   - apps/content-management
