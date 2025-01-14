@@ -1,6 +1,6 @@
 import com.hivext.api.Response;
 
-var cdnAppid = "c05ffa5b45628a2a0c95467ebca8a0b4",
+var cdnAppid = "c05ffa5b45628a2a0c95467ebca8a0b4test",
     lsAppid = "9e6afcf310004ac84060f90ff41a5aba",
     fields = {},
     field,
