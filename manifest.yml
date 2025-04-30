@@ -11,7 +11,7 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: /images/logo/new-logo-multiregion-standalone.svg
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
+baseUrl: https://raw.githubusercontent.com/sych74/wordpress-multiregion-standalone/JE-61521-new
 
 onBeforeInit: /scripts/onBeforeInit.js
 
