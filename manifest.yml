@@ -20,6 +20,7 @@ mixins:
   - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
 
 settings:
+  onBeforeInit: return settings;
   fields:
     - caption: Advanced Features
       type: displayfield
