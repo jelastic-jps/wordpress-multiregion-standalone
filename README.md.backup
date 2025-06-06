@@ -97,4 +97,3 @@ The geo distributed clusters require traffic load balancing between distant part
 For example, in case the CloudFlare domain registrar was chosen to create the A records for the cluster nodes as the entry points, you may go further and set up a DNS Load balancer at CloudFlare with smart Traffic Steering options.
 
 > **Note:** In case you have decided to move your site to the Multi-Region WordPress Cluster you can migrate it following the Tutorial ["How to Migrate a WordPress Site to Visrtuozzo PaaS](https://www.virtuozzo.com/company/blog/migrate-wordpress-site/) or any other one you prefer.
-

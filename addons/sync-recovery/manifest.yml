@@ -4,16 +4,16 @@ id: sync-recovery
 description:
   text: The add-on performs a diagnostic of your content synchronization between environments. 
   short: The add-on performs a diagnostic of your content synchronization between environments.
-logo: https://raw.githubusercontent.com/jelastic-jps/file-sync/master/images/icon.png
+logo: https://cdn.jsdelivr.net/gh/jelastic-jps/file-sync@master/images/icon.png
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/addons/sync-recovery
+baseUrl: https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress-multiregion-standalone@master/addons/sync-recovery
 
 targetNodes:
   nodeGroup: 
     - cp
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/common/main/clustered-addon-utils.yml
+  - https://cdn.jsdelivr.net/gh/jelastic-jps/common@main/clustered-addon-utils.yml
 
 globals:
   app_id: sync-recovery
