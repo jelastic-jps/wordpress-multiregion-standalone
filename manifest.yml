@@ -11,13 +11,13 @@ description:
   short: WordPress single instances in multi-region powered by LiteSpeed.
 logo: /images/logo/new-logo-multiregion-standalone.svg
 
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master
+baseUrl: https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress-multiregion-standalone@master
 
 onBeforeInit: /scripts/onBeforeInit.js
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress/master/configs/vers.yaml
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress@master/configs/vers.yaml
+  - https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress-multiregion-standalone@master/configs/additionalGlobals.yaml
 
 settings:
   fields:
@@ -90,7 +90,7 @@ settings:
     - caption: Topology
       type: displayfield
       name: topology
-      tooltip: "<h3>Multi-Region Standalone</h3><br><img width='375' height='340' src='https://raw.githubusercontent.com/jelastic-jps/wordpress/master/wordpress-edition/images/topo/multi-region-standalone.svg?sanitize=true'>" 
+      tooltip: "<h3>Multi-Region Standalone</h3><br><img width='375' height='340' src='https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress@master/wordpress-edition/images/topo/multi-region-standalone.svg?sanitize=true'>" 
 
     - caption: Regions
       type: regionlist
@@ -259,7 +259,7 @@ actions:
 
   installCDNaddon:
     - install:
-        jps: https://raw.githubusercontent.com/jelastic-jps/cdn/master/manifest.yml?_r=${fn.random}
+        jps: https://cdn.jsdelivr.net/gh/jelastic-jps/cdn@master/manifest.yml?_r=${fn.random}
         envName: ${settings.envName}-1
         skipEmail: true
         nodeGroup: cp
