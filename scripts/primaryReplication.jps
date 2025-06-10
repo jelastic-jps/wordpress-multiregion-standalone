@@ -2,10 +2,10 @@ jpsType: update
 id: multiregions-primary-replication
 name: Multi-Regions Primary Replication
 description: Multi-Regions Primary Replication
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregions/master
+baseUrl: https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress-multiregions@master
 
 mixins:
-  - https://raw.githubusercontent.com/jelastic-jps/wordpress-multiregion-standalone/master/configs/additionalGlobals.yaml
+  - https://cdn.jsdelivr.net/gh/jelastic-jps/wordpress-multiregion-standalone@master/configs/additionalGlobals.yaml
 
 globals:
   master: ${settings.master:false}
@@ -39,7 +39,7 @@ onInstall:
     - if ('${globals.master}' == 'true'):
       - if ('${env.envName}' == '${globals.cluster_name}-1'):
         - cmd[cp]: |-
-            curl --silent https://raw.githubusercontent.com/jelastic-jps/mysql-cluster/master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh
+            curl --silent https://cdn.jsdelivr.net/gh/jelastic-jps/mysql-cluster@master/addons/recovery/scripts/db-recovery.sh > /tmp/db-recovery.sh
             bash /tmp/db-recovery.sh  --scenario restore_primary_from_primary --donor-ip ${globals.master2_ip}
           user: root
 
